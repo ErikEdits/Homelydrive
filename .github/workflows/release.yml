@@ -200,6 +200,8 @@ jobs:
             type=semver,pattern={{version}},value=${{ needs.meta.outputs.version }}
             type=raw,value=latest
       - uses: docker/build-push-action@v6
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: false
         with:
           context: .
           push: true
@@ -217,10 +219,19 @@ jobs:
       VERSION: ${{ needs.meta.outputs.version }}
     steps:
       - uses: actions/checkout@v5
+      # only our packages (Docker adds its own build record artifact)
       - uses: actions/download-artifact@v4
         with:
+          name: linux
           path: dist
-          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: android
+          path: dist
       - name: Checksums
         run: cd dist && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt
       - name: Release notes
