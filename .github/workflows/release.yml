@@ -182,8 +182,11 @@ jobs:
           merge-multiple: true
       - name: Checksums
         run: cd dist && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt
+      - name: Release notes
+        run: sed "s|{{TAG}}|${GITHUB_REF_NAME}|g" docs/release-notes.md > "$RUNNER_TEMP/notes.md"
       - uses: softprops/action-gh-release@v2
         with:
+          name: Homelydrive ${{ github.ref_name }}
           files: dist/*
           generate_release_notes: true
-          body_path: docs/release-notes.md
+          body_path: ${{ runner.temp }}/notes.md

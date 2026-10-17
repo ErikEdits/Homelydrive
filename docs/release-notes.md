@@ -11,6 +11,6 @@
 | `Homelydrive-*.apk` | **Android-App** |
 | `*-portable.zip`, `*.tar.gz` | Programme ohne Installer / programs without installer |
 
-Docker: `ghcr.io/erikedits/homelydrive` · Anleitung / Guide: [docs/installation.md](https://github.com/ErikEdits/Homelydrive/blob/main/docs/installation.md)
+Docker: `ghcr.io/erikedits/homelydrive` · Anleitung / Guide: [docs/installation.md](https://github.com/ErikEdits/Homelydrive/blob/{{TAG}}/docs/installation.md)
 
 Tailscale muss auf dem Server und allen Geräten laufen. / Tailscale must run on the server and on all devices.
