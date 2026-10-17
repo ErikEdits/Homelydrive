@@ -1,0 +1,28 @@
+# Build output
+/dist/
+/build/
+*.exe
+*.test
+*.out
+
+# Web UI
+web/node_modules/
+web/dist/*
+!web/dist/.gitkeep
+
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/*.keystore
+android/.kotlin/
+*.apk
+*.aab
+
+# Editors / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
