@@ -326,7 +326,9 @@ func (s *Server) handleVaultContent(w http.ResponseWriter, r *http.Request, sess
 		kind = "attachment"
 	}
 	h.Set("Content-Disposition", contentDisposition(kind, it.Name))
-	h.Set("Content-Security-Policy", "sandbox; default-src 'none'; img-src 'self' data:; media-src 'self'; style-src 'unsafe-inline'")
+	if it.Mime != "application/pdf" {
+		h.Set("Content-Security-Policy", "sandbox; default-src 'none'; img-src 'self' data:; media-src 'self'; style-src 'unsafe-inline'")
+	}
 	h.Set("Cache-Control", "private, no-store")
 	http.ServeContent(w, r, "", time.UnixMilli(it.MTime), rd)
 }

@@ -76,12 +76,16 @@ func (c *Core) toInfo(u *User, rows []fileRow, mapPath func(fileRow) (ref, rel s
 		ids = append(ids, r.ID)
 		out = append(out, fi)
 	}
+	var uid int64 // anonymous link visitors have no user
+	if u != nil {
+		uid = u.ID
+	}
 	for start := 0; start < len(ids); start += 500 {
 		end := min(start+500, len(ids))
 		chunk := ids[start:end]
 		ph := strings.TrimSuffix(strings.Repeat("?,", len(chunk)), ",")
 		args := make([]any, 0, len(chunk)+1)
-		args = append(args, u.ID)
+		args = append(args, uid)
 		for _, id := range chunk {
 			args = append(args, id)
 		}

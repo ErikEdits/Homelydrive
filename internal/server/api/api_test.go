@@ -297,6 +297,16 @@ func TestEndToEnd(t *testing.T) {
 	}
 	jar.get("/api/v1/public/"+link.Token+"/content", 410) // limit reached
 
+	// Public folder link: listing and ZIP without an account.
+	var fl core.Link
+	e.do(anna, "POST", "/api/v1/links", map[string]any{"path": "Fotos"}, &fl, 200)
+	var pl struct{ Entries []core.FileInfo }
+	e.do("", "GET", "/api/v1/public/"+fl.Token+"/list?path=2026", nil, &pl, 200)
+	if len(pl.Entries) != 2 {
+		t.Fatalf("public folder listing: %+v", pl.Entries)
+	}
+	e.do("", "GET", "/api/v1/public/"+fl.Token+"/list?path=..", nil, nil, 400)
+
 	// Upload link: anonymous upload into a folder.
 	var ul core.Link
 	e.do(anna, "POST", "/api/v1/links", map[string]any{"path": "Fotos", "kind": "upload"}, &ul, 200)

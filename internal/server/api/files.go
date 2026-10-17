@@ -66,8 +66,12 @@ func serveFile(w http.ResponseWriter, r *http.Request, f *core.OpenedFile, downl
 		kind = "attachment"
 	}
 	h.Set("Content-Disposition", contentDisposition(kind, f.Name))
-	// Files are shown in a sandbox so an uploaded HTML or SVG file can never run scripts.
-	h.Set("Content-Security-Policy", "sandbox; default-src 'none'; img-src 'self' data:; media-src 'self'; style-src 'unsafe-inline'")
+	// Files are shown in a sandbox so an uploaded HTML or SVG file can never
+	// run scripts. PDFs are excluded: browsers refuse to show them in a
+	// sandbox, and their PDF viewers isolate documents on their own.
+	if mimeType != "application/pdf" {
+		h.Set("Content-Security-Policy", "sandbox; default-src 'none'; img-src 'self' data:; media-src 'self'; style-src 'unsafe-inline'")
+	}
 	h.Set("Cache-Control", "private, no-cache")
 	if f.Row.SHA256 != "" {
 		h.Set("ETag", `"`+f.Row.SHA256+`"`)

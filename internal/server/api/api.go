@@ -11,6 +11,7 @@ import (
 	"mime"
 	"net/http"
 	"net/url"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
@@ -195,6 +196,15 @@ func (s *Server) guard(next http.Handler) http.Handler {
 			http.Error(w, "Homelydrive is only reachable via Tailscale", http.StatusForbidden)
 			return
 		}
+		defer func() {
+			if v := recover(); v != nil {
+				if v == http.ErrAbortHandler {
+					panic(v)
+				}
+				s.Log.Error("panic in request", "path", r.URL.Path, "panic", v, "stack", string(debug.Stack()))
+				http.Error(w, "internal error", http.StatusInternalServerError)
+			}
+		}()
 		h := w.Header()
 		h.Set("X-Content-Type-Options", "nosniff")
 		h.Set("Referrer-Policy", "same-origin")
