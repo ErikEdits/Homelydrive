@@ -51,11 +51,6 @@ android {
     buildFeatures {
         buildConfig = true
     }
-    lint {
-        // all findings in the build log (CI)
-        textReport = true
-        textOutput = file("stdout")
-    }
     dependenciesInfo {
         // F-Droid: no Google signing blob in the APK.
         includeInApk = false
