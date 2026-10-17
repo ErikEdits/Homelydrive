@@ -1,10 +1,20 @@
 # Eine neue Version veröffentlichen
 
-Alle Downloads baut GitHub Actions automatisch (`.github/workflows/release.yml`), sobald ein Versions-Tag gepusht wird:
+Alle Downloads baut GitHub Actions automatisch (`.github/workflows/release.yml`). Es gibt zwei Wege:
+
+**A – Versions-Tag pushen:**
 
 ```sh
 git tag v1.0.0
 git push origin v1.0.0
+```
+
+**B – Commit mit `[release]`:** die Versionsnummer in der Datei `VERSION` erhöhen und mit `[release]` in der Commit-Nachricht pushen. Der Workflow legt den Tag `v<VERSION>` dann selbst an.
+
+```sh
+echo 1.0.0 > VERSION
+git commit -am "Version 1.0.0 [release]"
+git push
 ```
 
 Nach etwa 15 Minuten steht unter *Releases* eine neue Version mit allen Dateien (Windows-Installer, .deb, AppImage, APK, Prüfsummen). Zusätzlich wird das Docker-Image `ghcr.io/erikedits/homelydrive` veröffentlicht.
