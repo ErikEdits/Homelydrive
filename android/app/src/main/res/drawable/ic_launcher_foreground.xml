@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- House in a cloud (Homelydrive logo) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+    <group
+        android:scaleX="0.6"
+        android:scaleY="0.6"
+        android:translateX="102.4"
+        android:translateY="102.4">
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M150,382h216c48,0 86,-38 86,-86 0,-45 -34,-82 -78,-86 -12,-58 -63,-100 -122,-100 -50,0 -93,30 -112,74 -48,6 -86,47 -86,97 0,55 45,101 100,101z" />
+        <path
+            android:fillColor="#1F56C9"
+            android:pathData="M256,196 L172,266c-6,5 -2,14 6,14h14v74c0,8 6,14 14,14h100c8,0 14,-6 14,-14v-74h14c8,0 12,-9 6,-14z" />
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M244,300h24a6,6 0,0 1,6 6v62h-36v-62a6,6 0,0 1,6 -6z" />
+    </group>
+</vector>

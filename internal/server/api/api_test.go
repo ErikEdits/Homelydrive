@@ -184,7 +184,12 @@ func TestEndToEnd(t *testing.T) {
 	var up core.UploadStatus
 	e.do(anna, "POST", "/api/v1/uploads", map[string]any{"path": "Videos/gross.bin", "size": len(big), "sha256": hex.EncodeToString(sum[:])}, &up, 200)
 	patch := func(off int, part []byte) (*http.Response, core.UploadStatus) {
-		req, _ := http.NewRequest("PATCH", e.srv.URL+"/api/v1/uploads/"+up.ID, bytes.NewReader(part))
+		// The second chunk uses POST like the Android app (no PATCH in HttpURLConnection).
+		method := "PATCH"
+		if off > 0 {
+			method = "POST"
+		}
+		req, _ := http.NewRequest(method, e.srv.URL+"/api/v1/uploads/"+up.ID, bytes.NewReader(part))
 		req.Header.Set("Authorization", "Bearer "+anna)
 		req.Header.Set("Upload-Offset", fmt.Sprint(off))
 		resp, err := http.DefaultClient.Do(req)

@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">Homelydrive</string>
+
+    <!-- general -->
+    <string name="back">Back</string>
+    <string name="retry">Try again</string>
+    <string name="change">Change</string>
+    <string name="create">Create</string>
+    <string name="clear">Clear</string>
+    <string name="delete">Delete</string>
+    <string name="reset">Reset</string>
+    <string name="allow">Allow</string>
+    <string name="upload">Upload</string>
+    <string name="my_drive">My Drive</string>
+    <string name="team_folder">Team folder</string>
+    <string name="shared_with_me">Shared with me</string>
+    <string name="mounted_folder">Mounted folder</string>
+    <string name="shared_by">Shared by %1$s</string>
+    <string name="file_fallback">File</string>
+    <string name="note_prefix">Note</string>
+
+    <!-- tabs -->
+    <string name="tab_files">Files</string>
+    <string name="tab_upload">Upload</string>
+    <string name="tab_more">More</string>
+
+    <!-- login -->
+    <string name="login">Sign in</string>
+    <string name="login_subtitle">Your own cloud, connected through Tailscale</string>
+    <string name="server_address">Server (Tailscale name or 100.x address)</string>
+    <string name="server_hint">For example “my-pc” or “100.101.102.103”. Port 8420 is added automatically.</string>
+    <string name="username">User name</string>
+    <string name="password">Password</string>
+    <string name="fill_all">Please fill in all fields.</string>
+    <string name="open_tailscale">Open Tailscale</string>
+    <string name="get_tailscale">Get Tailscale</string>
+    <string name="tailscale_hint">Tailscale must be switched on on this phone. The server is only reachable inside your tailnet.</string>
+    <string name="login_first">Please sign in to Homelydrive first.</string>
+
+    <!-- errors -->
+    <string name="err_unreachable">Server not reachable. Is Tailscale on?</string>
+    <string name="err_unreachable_login">The server could not be reached. Check the address and that Tailscale is on on this phone and on the server.</string>
+    <string name="err_login">Please sign in again.</string>
+    <string name="err_wrong_password">User name or password is wrong.</string>
+    <string name="err_not_homelydrive">There is no Homelydrive server at this address.</string>
+    <string name="err_gone">The file no longer exists on the phone.</string>
+    <string name="err_image">The picture could not be read.</string>
+
+    <!-- files tab -->
+    <string name="server_unreachable_title">Server not reachable</string>
+    <string name="server_unreachable_text">%1$s does not answer. Is Tailscale on and is the server running?</string>
+    <string name="download_started">Downloading %1$s …</string>
+    <string name="zip_too_many">This ZIP download only works in the browser. Select fewer items or download them one by one.</string>
+
+    <!-- upload tab -->
+    <string name="phone_folders">Phone folders</string>
+    <string name="phone_folder">Phone folder</string>
+    <string name="no_folders">No folders yet. Choose any folders of your phone; new files in them are uploaded right away.</string>
+    <string name="add_folder">Add folder</string>
+    <string name="archive_mode_hint">Upload only: files you delete on the phone stay on the server.</string>
+    <string name="queue">Waiting</string>
+    <string name="history">Upload history</string>
+    <string name="share_link">Share link</string>
+    <string name="cancel_upload">Cancel upload</string>
+    <string name="storage_access_title">Access to your files</string>
+    <string name="storage_access_text">To upload any folder you choose, Homelydrive needs access to all files on this phone.</string>
+    <string name="folder_exists">This folder is already in the list.</string>
+    <string name="folder_added">Folder added</string>
+    <string name="folder_settings">Folder settings</string>
+    <string name="target_folder">Target folder on the server</string>
+    <string name="delete_after_upload">Delete on the phone after upload</string>
+    <string name="delete_never">Never (keep on the phone)</string>
+    <string name="delete_now">Right after the upload</string>
+    <string name="delete_after_days">%1$d days after the upload</string>
+    <string name="delete_now_short">deleted after upload</string>
+    <string name="delete_after_short">deleted after %1$d days</string>
+    <string name="delete_warning">Files are deleted from the phone once they are safely on the server. They are not moved to a trash on the phone.</string>
+    <string name="delete_hint">Frees space on the phone. Only files that are unchanged since the upload are deleted.</string>
+    <string name="remove_folder">Remove folder</string>
+    <string name="remove_folder_confirm">Stop uploading this folder? Files already uploaded stay on the server.</string>
+
+    <!-- status -->
+    <string name="status_logged_out">Not signed in</string>
+    <string name="status_paused">Uploads paused</string>
+    <string name="status_checking">Checking %1$s</string>
+    <string name="status_uploading">Uploading %1$s</string>
+    <string name="status_preparing">Preparing upload</string>
+    <string name="status_done">Everything is uploaded</string>
+    <string name="status_unreachable">Server not reachable – will try again</string>
+    <string name="action_pause">Pause</string>
+    <string name="action_resume">Resume</string>
+    <string name="action_upload_now">Upload now</string>
+
+    <!-- folder picker -->
+    <string name="pick_folder">Choose folder</string>
+    <string name="pick_phone_folder">Choose a phone folder</string>
+    <string name="pick_local_hint">Choose a storage, then the folder to upload.</string>
+    <string name="pick_remote_hint">Choose where the files go.</string>
+    <string name="choose_this_folder">Choose this folder</string>
+    <string name="new_folder">New folder</string>
+    <string name="folder_name">Folder name</string>
+    <string name="no_subfolders">No subfolders</string>
+    <string name="internal_storage">Internal storage</string>
+    <string name="sd_card">SD card</string>
+
+    <!-- share -->
+    <string name="share_target">Upload to Homelydrive</string>
+    <string name="share_title">Upload to Homelydrive</string>
+    <string name="share_text_note">The shared text is saved as a text file.</string>
+
+    <!-- scanner -->
+    <string name="scanner_title">Scan document</string>
+    <string name="scanner_sub">Photograph pages and upload them as a PDF</string>
+    <string name="scanner_empty">Take a photo of each page. You can rotate, crop and add more pages afterwards.</string>
+    <string name="take_photo">Take photo</string>
+    <string name="add_page">Add page</string>
+    <string name="from_gallery">From gallery</string>
+    <string name="upload_pdf">Upload as PDF</string>
+    <string name="file_name">File name</string>
+    <string name="scan_default_name">Scan %1$s</string>
+    <string name="page_n">Page %1$d</string>
+    <string name="rotate">Rotate</string>
+    <string name="crop">Crop</string>
+    <string name="black_white">Document filter (black and white)</string>
+    <string name="move_up">Move up</string>
+    <string name="no_camera_app">No camera app found.</string>
+    <string name="scan_queued">%1$s is being uploaded.</string>
+
+    <!-- more tab -->
+    <string name="target_folders">Target folders</string>
+    <string name="share_target_label">Files shared from other apps</string>
+    <string name="scan_target_label">Scans</string>
+    <string name="permissions">Permissions</string>
+    <string name="perm_storage">Access to all files</string>
+    <string name="perm_granted">Allowed</string>
+    <string name="perm_missing">Not allowed – needed for uploading folders</string>
+    <string name="perm_battery">Run in the background</string>
+    <string name="perm_battery_ok">Battery optimisation is off – uploads keep running</string>
+    <string name="perm_battery_missing">Battery optimisation is on – Android may stop uploads</string>
+    <string name="perm_notifications">Notifications</string>
+    <string name="perm_notifications_sub">Upload status, new shares, update hint</string>
+    <string name="account">Account</string>
+    <string name="update_check">Check for updates</string>
+    <string name="update_check_sub">Once a day on GitHub (needs internet)</string>
+    <string name="update_available">Version %1$s is available</string>
+    <string name="update_tap">Tap to open the download page</string>
+    <string name="logout">Sign out</string>
+    <string name="logout_confirm">Sign out from this server? Uploads stop until you sign in again.</string>
+    <string name="about">About</string>
+    <string name="about_text">Free and open source (GPL-3.0) · github.com/ErikEdits/Homelydrive</string>
+
+    <!-- notifications -->
+    <string name="channel_upload">Uploads</string>
+    <string name="channel_upload_desc">Shows the upload progress</string>
+    <string name="channel_events">News</string>
+    <string name="channel_events_desc">New shares, uploads through links, storage warnings and updates</string>
+    <string name="notify_share_folder">%1$s shared the folder “%2$s” with you</string>
+    <string name="notify_share_file">%1$s shared “%2$s” with you</string>
+    <string name="notify_link_upload">New file through your upload link: “%1$s” in “%2$s”</string>
+    <string name="notify_quota">Your storage is %1$d %% full (%2$s of %3$s)</string>
+    <string name="notify_disk">The disk %1$s on the server is %2$d %% full</string>
+    <string name="notify_server_update">Server version %1$s is available</string>
+    <string name="notify_app_update">Homelydrive %1$s for Android is available</string>
+
+    <!-- widget -->
+    <string name="widget_name">Homelydrive uploads</string>
+    <string name="widget_description">Upload status and an “upload now” button</string>
+    <string name="widget_idle">Everything is uploaded</string>
+    <string name="widget_upload_now">Upload</string>
+
+    <plurals name="files">
+        <item quantity="one">%d file</item>
+        <item quantity="other">%d files</item>
+    </plurals>
+    <plurals name="files_waiting">
+        <item quantity="one">%d file waiting</item>
+        <item quantity="other">%d files waiting</item>
+    </plurals>
+    <plurals name="folders_watched">
+        <item quantity="one">%d folder is watched</item>
+        <item quantity="other">%d folders are watched</item>
+    </plurals>
+    <plurals name="uploaded_files">
+        <item quantity="one">%d file uploaded</item>
+        <item quantity="other">%d files uploaded</item>
+    </plurals>
+    <plurals name="upload_errors">
+        <item quantity="one">%d upload failed – tap “Upload now” to try again</item>
+        <item quantity="other">%d uploads failed – tap “Upload now” to try again</item>
+    </plurals>
+    <plurals name="share_queued">
+        <item quantity="one">%d file is being uploaded</item>
+        <item quantity="other">%d files are being uploaded</item>
+    </plurals>
+    <plurals name="entries">
+        <item quantity="one">%d item</item>
+        <item quantity="other">%d items</item>
+    </plurals>
+</resources>

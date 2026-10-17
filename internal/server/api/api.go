@@ -90,6 +90,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("HEAD /api/v1/uploads/{id}", s.auth(s.handleUploadOffset))
 	mux.HandleFunc("GET /api/v1/uploads/{id}", s.auth(s.handleUploadOffset))
 	mux.HandleFunc("PATCH /api/v1/uploads/{id}", s.auth(s.handleUploadChunk))
+	// POST variant for clients without PATCH support (Android HttpURLConnection).
+	mux.HandleFunc("POST /api/v1/uploads/{id}", s.auth(s.handleUploadChunk))
 	mux.HandleFunc("DELETE /api/v1/uploads/{id}", s.auth(s.handleCancelUpload))
 
 	// --- trash ---
@@ -142,6 +144,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("HEAD /api/v1/public/{token}/uploads/{id}", s.handlePublicUploadOffset)
 	mux.HandleFunc("GET /api/v1/public/{token}/uploads/{id}", s.handlePublicUploadOffset)
 	mux.HandleFunc("PATCH /api/v1/public/{token}/uploads/{id}", s.handlePublicUploadChunk)
+	mux.HandleFunc("POST /api/v1/public/{token}/uploads/{id}", s.handlePublicUploadChunk)
 
 	// --- admin (server window, localhost only) ---
 	mux.HandleFunc("GET /api/v1/admin/state", s.local(s.handleAdminState))

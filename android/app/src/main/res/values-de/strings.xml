@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- allgemein -->
+    <string name="back">Zurück</string>
+    <string name="retry">Erneut versuchen</string>
+    <string name="change">Ändern</string>
+    <string name="create">Erstellen</string>
+    <string name="clear">Leeren</string>
+    <string name="delete">Löschen</string>
+    <string name="reset">Zurücksetzen</string>
+    <string name="allow">Erlauben</string>
+    <string name="upload">Hochladen</string>
+    <string name="my_drive">Meine Ablage</string>
+    <string name="team_folder">Team-Ordner</string>
+    <string name="shared_with_me">Mit mir geteilt</string>
+    <string name="mounted_folder">Eingebundener Ordner</string>
+    <string name="shared_by">Geteilt von %1$s</string>
+    <string name="file_fallback">Datei</string>
+    <string name="note_prefix">Notiz</string>
+
+    <!-- Reiter -->
+    <string name="tab_files">Dateien</string>
+    <string name="tab_upload">Hochladen</string>
+    <string name="tab_more">Mehr</string>
+
+    <!-- Anmeldung -->
+    <string name="login">Anmelden</string>
+    <string name="login_subtitle">Deine eigene Cloud, verbunden über Tailscale</string>
+    <string name="server_address">Server (Tailscale-Name oder 100.x-Adresse)</string>
+    <string name="server_hint">Zum Beispiel „mein-pc“ oder „100.101.102.103“. Port 8420 wird automatisch ergänzt.</string>
+    <string name="username">Benutzername</string>
+    <string name="password">Passwort</string>
+    <string name="fill_all">Bitte alle Felder ausfüllen.</string>
+    <string name="open_tailscale">Tailscale öffnen</string>
+    <string name="get_tailscale">Tailscale holen</string>
+    <string name="tailscale_hint">Tailscale muss auf diesem Handy eingeschaltet sein. Der Server ist nur in deinem Tailnet erreichbar.</string>
+    <string name="login_first">Bitte melde dich zuerst bei Homelydrive an.</string>
+
+    <!-- Fehler -->
+    <string name="err_unreachable">Server nicht erreichbar. Ist Tailscale an?</string>
+    <string name="err_unreachable_login">Der Server ist nicht erreichbar. Prüfe die Adresse und ob Tailscale auf diesem Handy und auf dem Server eingeschaltet ist.</string>
+    <string name="err_login">Bitte melde dich erneut an.</string>
+    <string name="err_wrong_password">Benutzername oder Passwort ist falsch.</string>
+    <string name="err_not_homelydrive">Unter dieser Adresse läuft kein Homelydrive-Server.</string>
+    <string name="err_gone">Die Datei gibt es auf dem Handy nicht mehr.</string>
+    <string name="err_image">Das Bild konnte nicht gelesen werden.</string>
+
+    <!-- Dateien -->
+    <string name="server_unreachable_title">Server nicht erreichbar</string>
+    <string name="server_unreachable_text">%1$s antwortet nicht. Ist Tailscale an und läuft der Server?</string>
+    <string name="download_started">%1$s wird heruntergeladen …</string>
+    <string name="zip_too_many">Dieser ZIP-Download geht nur im Browser. Wähle weniger Einträge aus oder lade sie einzeln herunter.</string>
+
+    <!-- Hochladen -->
+    <string name="phone_folders">Handy-Ordner</string>
+    <string name="phone_folder">Handy-Ordner</string>
+    <string name="no_folders">Noch keine Ordner. Wähle beliebige Ordner deines Handys aus – neue Dateien darin werden sofort hochgeladen.</string>
+    <string name="add_folder">Ordner hinzufügen</string>
+    <string name="archive_mode_hint">Nur hochladen: Dateien, die du auf dem Handy löschst, bleiben auf dem Server.</string>
+    <string name="queue">Wartet</string>
+    <string name="history">Upload-Verlauf</string>
+    <string name="share_link">Link teilen</string>
+    <string name="cancel_upload">Upload abbrechen</string>
+    <string name="storage_access_title">Zugriff auf deine Dateien</string>
+    <string name="storage_access_text">Damit jeder Ordner hochgeladen werden kann, den du auswählst, braucht Homelydrive Zugriff auf alle Dateien dieses Handys.</string>
+    <string name="folder_exists">Dieser Ordner ist schon in der Liste.</string>
+    <string name="folder_added">Ordner hinzugefügt</string>
+    <string name="folder_settings">Ordner-Einstellungen</string>
+    <string name="target_folder">Zielordner auf dem Server</string>
+    <string name="delete_after_upload">Auf dem Handy löschen nach dem Hochladen</string>
+    <string name="delete_never">Nie (auf dem Handy behalten)</string>
+    <string name="delete_now">Sofort nach dem Hochladen</string>
+    <string name="delete_after_days">%1$d Tage nach dem Hochladen</string>
+    <string name="delete_now_short">wird nach dem Hochladen gelöscht</string>
+    <string name="delete_after_short">wird nach %1$d Tagen gelöscht</string>
+    <string name="delete_warning">Dateien werden vom Handy gelöscht, sobald sie sicher auf dem Server sind. Sie landen auf dem Handy nicht im Papierkorb.</string>
+    <string name="delete_hint">Schafft Platz auf dem Handy. Gelöscht werden nur Dateien, die seit dem Hochladen unverändert sind.</string>
+    <string name="remove_folder">Ordner entfernen</string>
+    <string name="remove_folder_confirm">Diesen Ordner nicht mehr hochladen? Bereits hochgeladene Dateien bleiben auf dem Server.</string>
+
+    <!-- Status -->
+    <string name="status_logged_out">Nicht angemeldet</string>
+    <string name="status_paused">Hochladen pausiert</string>
+    <string name="status_checking">Prüfe %1$s</string>
+    <string name="status_uploading">Lade %1$s hoch</string>
+    <string name="status_preparing">Hochladen wird vorbereitet</string>
+    <string name="status_done">Alles hochgeladen</string>
+    <string name="status_unreachable">Server nicht erreichbar – neuer Versuch folgt</string>
+    <string name="action_pause">Pausieren</string>
+    <string name="action_resume">Fortsetzen</string>
+    <string name="action_upload_now">Jetzt hochladen</string>
+
+    <!-- Ordnerauswahl -->
+    <string name="pick_folder">Ordner wählen</string>
+    <string name="pick_phone_folder">Handy-Ordner wählen</string>
+    <string name="pick_local_hint">Wähle einen Speicher und dann den Ordner, der hochgeladen werden soll.</string>
+    <string name="pick_remote_hint">Wähle, wohin die Dateien kommen.</string>
+    <string name="choose_this_folder">Diesen Ordner wählen</string>
+    <string name="new_folder">Neuer Ordner</string>
+    <string name="folder_name">Ordnername</string>
+    <string name="no_subfolders">Keine Unterordner</string>
+    <string name="internal_storage">Interner Speicher</string>
+    <string name="sd_card">SD-Karte</string>
+
+    <!-- Teilen -->
+    <string name="share_target">In Homelydrive hochladen</string>
+    <string name="share_title">In Homelydrive hochladen</string>
+    <string name="share_text_note">Der geteilte Text wird als Textdatei gespeichert.</string>
+
+    <!-- Scanner -->
+    <string name="scanner_title">Dokument scannen</string>
+    <string name="scanner_sub">Seiten fotografieren und als PDF hochladen</string>
+    <string name="scanner_empty">Fotografiere jede Seite. Danach kannst du drehen, zuschneiden und weitere Seiten hinzufügen.</string>
+    <string name="take_photo">Foto aufnehmen</string>
+    <string name="add_page">Seite hinzufügen</string>
+    <string name="from_gallery">Aus Galerie</string>
+    <string name="upload_pdf">Als PDF hochladen</string>
+    <string name="file_name">Dateiname</string>
+    <string name="scan_default_name">Scan %1$s</string>
+    <string name="page_n">Seite %1$d</string>
+    <string name="rotate">Drehen</string>
+    <string name="crop">Zuschneiden</string>
+    <string name="black_white">Dokument-Filter (schwarz-weiß)</string>
+    <string name="move_up">Nach oben</string>
+    <string name="no_camera_app">Keine Kamera-App gefunden.</string>
+    <string name="scan_queued">%1$s wird hochgeladen.</string>
+
+    <!-- Mehr -->
+    <string name="target_folders">Zielordner</string>
+    <string name="share_target_label">Aus anderen Apps geteilte Dateien</string>
+    <string name="scan_target_label">Scans</string>
+    <string name="permissions">Berechtigungen</string>
+    <string name="perm_storage">Zugriff auf alle Dateien</string>
+    <string name="perm_granted">Erlaubt</string>
+    <string name="perm_missing">Nicht erlaubt – nötig zum Hochladen von Ordnern</string>
+    <string name="perm_battery">Im Hintergrund laufen</string>
+    <string name="perm_battery_ok">Akku-Optimierung ist aus – Uploads laufen weiter</string>
+    <string name="perm_battery_missing">Akku-Optimierung ist an – Android kann Uploads stoppen</string>
+    <string name="perm_notifications">Benachrichtigungen</string>
+    <string name="perm_notifications_sub">Upload-Status, neue Freigaben, Update-Hinweis</string>
+    <string name="account">Konto</string>
+    <string name="update_check">Nach Updates suchen</string>
+    <string name="update_check_sub">Einmal am Tag auf GitHub (braucht Internet)</string>
+    <string name="update_available">Version %1$s ist verfügbar</string>
+    <string name="update_tap">Tippen, um die Download-Seite zu öffnen</string>
+    <string name="logout">Abmelden</string>
+    <string name="logout_confirm">Von diesem Server abmelden? Uploads stoppen, bis du dich wieder anmeldest.</string>
+    <string name="about">Über</string>
+    <string name="about_text">Kostenlos und quelloffen (GPL-3.0) · github.com/ErikEdits/Homelydrive</string>
+
+    <!-- Benachrichtigungen -->
+    <string name="channel_upload">Uploads</string>
+    <string name="channel_upload_desc">Zeigt den Fortschritt beim Hochladen</string>
+    <string name="channel_events">Neuigkeiten</string>
+    <string name="channel_events_desc">Neue Freigaben, Uploads über Links, Speicherwarnungen und Updates</string>
+    <string name="notify_share_folder">%1$s hat den Ordner „%2$s“ mit dir geteilt</string>
+    <string name="notify_share_file">%1$s hat „%2$s“ mit dir geteilt</string>
+    <string name="notify_link_upload">Neue Datei über deinen Upload-Link: „%1$s“ in „%2$s“</string>
+    <string name="notify_quota">Dein Speicher ist zu %1$d %% voll (%2$s von %3$s)</string>
+    <string name="notify_disk">Die Festplatte %1$s auf dem Server ist zu %2$d %% voll</string>
+    <string name="notify_server_update">Server-Version %1$s ist verfügbar</string>
+    <string name="notify_app_update">Homelydrive %1$s für Android ist verfügbar</string>
+
+    <!-- Widget -->
+    <string name="widget_name">Homelydrive-Uploads</string>
+    <string name="widget_description">Upload-Status und ein „Jetzt hochladen“-Knopf</string>
+    <string name="widget_idle">Alles hochgeladen</string>
+    <string name="widget_upload_now">Hochladen</string>
+
+    <plurals name="files">
+        <item quantity="one">%d Datei</item>
+        <item quantity="other">%d Dateien</item>
+    </plurals>
+    <plurals name="files_waiting">
+        <item quantity="one">%d Datei wartet</item>
+        <item quantity="other">%d Dateien warten</item>
+    </plurals>
+    <plurals name="folders_watched">
+        <item quantity="one">%d Ordner wird beobachtet</item>
+        <item quantity="other">%d Ordner werden beobachtet</item>
+    </plurals>
+    <plurals name="uploaded_files">
+        <item quantity="one">%d Datei hochgeladen</item>
+        <item quantity="other">%d Dateien hochgeladen</item>
+    </plurals>
+    <plurals name="upload_errors">
+        <item quantity="one">%d Upload fehlgeschlagen – „Jetzt hochladen“ versucht es erneut</item>
+        <item quantity="other">%d Uploads fehlgeschlagen – „Jetzt hochladen“ versucht es erneut</item>
+    </plurals>
+    <plurals name="share_queued">
+        <item quantity="one">%d Datei wird hochgeladen</item>
+        <item quantity="other">%d Dateien werden hochgeladen</item>
+    </plurals>
+    <plurals name="entries">
+        <item quantity="one">%d Eintrag</item>
+        <item quantity="other">%d Einträge</item>
+    </plurals>
+</resources>
