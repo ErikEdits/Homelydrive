@@ -73,7 +73,7 @@ class Uploader(private val ctx: Context) {
     private val prefs get() = ctx.hd.prefs
     private val db get() = ctx.hd.db
 
-    enum class Result { IDLE, STOPPED, OFFLINE, LOGGED_OUT }
+    enum class Result { IDLE, STOPPED, OFFLINE, LOGGED_OUT, BUSY }
 
     private class Stopped : Exception()
     private class Restart : Exception()
@@ -179,6 +179,8 @@ class Uploader(private val ctx: Context) {
     /** Uploads queued files one after another until the queue is empty or [stop] says so. */
     fun runQueue(stop: () -> Boolean): Result {
         val api = api() ?: return Result.LOGGED_OUT
+        // Service and job must never upload at the same time (the same file would arrive twice).
+        if (!running.compareAndSet(false, true)) return Result.BUSY
         try {
             while (true) {
                 if (stop()) return Result.STOPPED
@@ -201,6 +203,7 @@ class Uploader(private val ctx: Context) {
         } catch (e: Stopped) {
             return Result.STOPPED
         } finally {
+            running.set(false)
             UploadState.idle()
         }
     }
@@ -314,6 +317,8 @@ class Uploader(private val ctx: Context) {
         const val CHUNK = 16L * 1024 * 1024
         /** Files modified more recently than this are still being written. */
         const val SETTLE_MS = 4000L
+
+        private val running = java.util.concurrent.atomic.AtomicBoolean(false)
 
         private val junkNames = setOf("thumbs.db", "desktop.ini", ".ds_store", ".nomedia")
 

@@ -161,6 +161,7 @@ class UploadService : Service() {
                 retryDelay = RETRY_MIN
                 finishIfUnneeded()
             }
+            Uploader.Result.BUSY -> uploadHandler.postDelayed(cycle, 5000) // the background job is finishing a chunk
             Uploader.Result.STOPPED -> {}
         }
         UploadState.changed()
@@ -395,7 +396,9 @@ class UploadService : Service() {
                 ctx.startForegroundService(Intent(ctx, UploadService::class.java).setAction(action))
                 true
             } catch (e: Exception) {
+                // Android 12+ forbids this from the background: upload with a job instead.
                 Log.w(TAG, "cannot start service", e)
+                if (ctx.hd.db.pendingCount() > 0) UploadJob.schedule(ctx)
                 false
             }
         }
