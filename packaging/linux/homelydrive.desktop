@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Homelydrive
+GenericName=Cloud Storage
+GenericName[de]=Cloud-Speicher
+Comment=Upload folders to your own Homelydrive server
+Comment[de]=Ordner auf deinen eigenen Homelydrive-Server hochladen
+Exec=homelydrive %F
+Icon=homelydrive
+Terminal=false
+Categories=Network;FileTransfer;Utility;
+Keywords=cloud;drive;sync;upload;tailscale;
+StartupNotify=false

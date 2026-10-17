@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Homelydrive Server
+Comment=Server window: storage, users, logs
+Comment[de]=Server-Fenster: Speicher, Benutzer, Protokoll
+Exec=homelydrive-server gui
+Icon=homelydrive-server
+Terminal=false
+Categories=Network;System;
+Keywords=cloud;server;tailscale;

@@ -3,6 +3,8 @@
 // file managers Nautilus (GNOME), Nemo (Cinnamon), Caja (MATE) and Dolphin (KDE).
 package integration
 
+import "os"
+
 // Entry describes one context menu entry.
 type Entry struct {
 	ID      string // used for file names / registry keys
@@ -23,4 +25,14 @@ func Entries(lang string) []Entry {
 		{ID: "upload", Label: "Auf Homelydrive hochladen", Command: "upload", Dirs: true},
 		{ID: "link", Label: "Homelydrive-Link kopieren", Command: "link"},
 	}
+}
+
+// SelfPath is the program path that context menu entries and restarts use.
+// Inside an AppImage this is the AppImage file itself: the mounted path of
+// the running program changes on every start.
+func SelfPath() (string, error) {
+	if p := os.Getenv("APPIMAGE"); p != "" {
+		return p, nil
+	}
+	return os.Executable()
 }

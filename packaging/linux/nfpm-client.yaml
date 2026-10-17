@@ -1,0 +1,40 @@
+# nfpm package definition for the PC app (amd64); VERSION comes from the environment.
+#   VERSION=0.1.0 nfpm package -f packaging/linux/nfpm-client.yaml -p deb -t dist/
+name: homelydrive
+arch: amd64
+platform: linux
+version: ${VERSION}
+section: net
+priority: optional
+maintainer: Homelydrive <https://github.com/ErikEdits/Homelydrive>
+description: |
+  Homelydrive PC app – uploads chosen folders to your own Homelydrive server,
+  virtual drive, tray icon and right-click menu. Connects through Tailscale.
+homepage: https://github.com/ErikEdits/Homelydrive
+license: GPL-3.0-only
+depends:
+  - libfuse2 | libfuse2t64
+recommends:
+  - fuse3 | fuse
+  - xclip | wl-clipboard
+suggests:
+  - chromium | chromium-browser | google-chrome-stable | microsoft-edge-stable
+contents:
+  - src: dist/linux-amd64/homelydrive
+    dst: /usr/bin/homelydrive
+    file_info:
+      mode: 0755
+  - src: packaging/linux/homelydrive.desktop
+    dst: /usr/share/applications/homelydrive.desktop
+  - src: assets/logo-256.png
+    dst: /usr/share/icons/hicolor/256x256/apps/homelydrive.png
+  - src: assets/logo-128.png
+    dst: /usr/share/icons/hicolor/128x128/apps/homelydrive.png
+  - src: assets/logo-64.png
+    dst: /usr/share/icons/hicolor/64x64/apps/homelydrive.png
+  - src: assets/logo-48.png
+    dst: /usr/share/icons/hicolor/48x48/apps/homelydrive.png
+  - src: assets/logo-32.png
+    dst: /usr/share/icons/hicolor/32x32/apps/homelydrive.png
+  - src: assets/logo.svg
+    dst: /usr/share/icons/hicolor/scalable/apps/homelydrive.svg

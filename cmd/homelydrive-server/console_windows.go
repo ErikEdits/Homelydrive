@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"unsafe"
 
+	"github.com/kardianos/service"
 	"golang.org/x/sys/windows"
 )
 
@@ -53,4 +54,14 @@ func showError(msg string) {
 	title, _ := syscall.UTF16PtrFromString("Homelydrive Server")
 	user32 := windows.NewLazySystemDLL("user32.dll")
 	user32.NewProc("MessageBoxW").Call(0, uintptr(unsafe.Pointer(text)), uintptr(unsafe.Pointer(title)), 0x10)
+}
+
+// defaultCommand is what runs without arguments. A double click in Explorer
+// (no console) opens the server window; in cmd.exe/PowerShell or as a
+// service the server runs in the foreground.
+func defaultCommand() string {
+	if service.Interactive() && !hasConsole {
+		return "gui"
+	}
+	return "run"
 }

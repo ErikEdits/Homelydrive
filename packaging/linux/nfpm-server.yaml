@@ -1,0 +1,44 @@
+# nfpm package definition for the server (amd64); VERSION comes from the environment.
+#   VERSION=0.1.0 nfpm package -f packaging/linux/nfpm-server.yaml -p deb -t dist/
+name: homelydrive-server
+arch: amd64
+platform: linux
+version: ${VERSION}
+section: net
+priority: optional
+maintainer: Homelydrive <https://github.com/ErikEdits/Homelydrive>
+description: |
+  Homelydrive Server – your own cloud storage (Google Drive alternative).
+  Files, photos, sharing, search, vault and WebDAV; reachable through Tailscale.
+homepage: https://github.com/ErikEdits/Homelydrive
+license: GPL-3.0-only
+recommends:
+  - tailscale
+  - ffmpeg
+suggests:
+  - chromium | chromium-browser | google-chrome-stable | microsoft-edge-stable
+contents:
+  - src: dist/linux-amd64/homelydrive-server
+    dst: /usr/bin/homelydrive-server
+    file_info:
+      mode: 0755
+  - src: packaging/linux/homelydrive.service
+    dst: /lib/systemd/system/homelydrive.service
+  - src: packaging/linux/homelydrive-server.desktop
+    dst: /usr/share/applications/homelydrive-server.desktop
+  - src: assets/logo-256.png
+    dst: /usr/share/icons/hicolor/256x256/apps/homelydrive-server.png
+  - src: assets/logo-128.png
+    dst: /usr/share/icons/hicolor/128x128/apps/homelydrive-server.png
+  - src: assets/logo-64.png
+    dst: /usr/share/icons/hicolor/64x64/apps/homelydrive-server.png
+  - src: assets/logo-48.png
+    dst: /usr/share/icons/hicolor/48x48/apps/homelydrive-server.png
+  - src: assets/logo-32.png
+    dst: /usr/share/icons/hicolor/32x32/apps/homelydrive-server.png
+  - src: assets/logo.svg
+    dst: /usr/share/icons/hicolor/scalable/apps/homelydrive-server.svg
+scripts:
+  postinstall: packaging/linux/server-postinstall.sh
+  preremove: packaging/linux/server-preremove.sh
+  postremove: packaging/linux/server-postremove.sh

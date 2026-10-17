@@ -1,0 +1,23 @@
+Homelydrive ist eine freie Google-Drive-Alternative, die auf deinem eigenen PC läuft. Die Android-App verbindet sich über Tailscale mit deinem Homelydrive-Server – ohne Portfreigaben und ohne fremde Cloud.
+
+<b>Ordner hochladen</b>
+<ul>
+<li>Beliebige Ordner des Handys wählen: Kamera, Messenger-Bilder, Downloads, Dokumente …</li>
+<li>Neue Dateien werden sofort hochgeladen, auch im Hintergrund und nach einem Neustart</li>
+<li>Für jeden Ordner ein eigener Zielordner auf dem Server</li>
+<li>Nur hochladen: auf dem Handy gelöschte Dateien bleiben auf dem Server</li>
+<li>Optional: Dateien nach dem Hochladen auf dem Handy löschen, um Platz zu schaffen</li>
+<li>Große Dateien ohne Limit, Fortsetzen nach Verbindungsabbrüchen, doppelte Dateien werden erkannt</li>
+</ul>
+
+<b>Mehr</b>
+<ul>
+<li>Alle Dateien ansehen, suchen und teilen (Weboberfläche des Servers)</li>
+<li>Server-Dateien in der Android-„Dateien“-App und in jedem Dateiauswahl-Dialog</li>
+<li>„Teilen“ aus jeder App: In Homelydrive hochladen</li>
+<li>Dokumenten-Scanner: Seiten fotografieren und als PDF hochladen</li>
+<li>Widget mit Upload-Status</li>
+<li>Benachrichtigungen bei neuen Freigaben</li>
+</ul>
+
+Die App nutzt keine Google-Dienste und keine Tracker. Du brauchst einen eigenen Homelydrive-Server (Windows oder Linux) und Tailscale.

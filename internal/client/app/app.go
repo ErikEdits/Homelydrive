@@ -131,7 +131,7 @@ func (a *App) Start() error {
 		a.connect(remote.New(c.Server, c.Token))
 	}
 	if !c.Integration {
-		if exe, err := os.Executable(); err == nil {
+		if exe, err := integration.SelfPath(); err == nil {
 			if integration.Install(exe, c.Language) == nil {
 				a.Cfg.Update(func(c *config.Config) { c.Integration = true })
 			}

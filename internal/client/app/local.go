@@ -496,7 +496,7 @@ func (a *App) handleSettings(w http.ResponseWriter, r *http.Request) {
 	a.Eng.SetBandwidth(c.BandwidthKBps)
 	notify.SetEnabled(c.Notifications)
 	if req.Language != nil && c.Integration {
-		if exe, err := os.Executable(); err == nil {
+		if exe, err := integration.SelfPath(); err == nil {
 			integration.Install(exe, c.Language)
 		}
 	}
@@ -894,7 +894,7 @@ func (a *App) handleIntegration(w http.ResponseWriter, r *http.Request) {
 	}
 	var err error
 	if req.Install {
-		exe, _ := os.Executable()
+		exe, _ := integration.SelfPath()
 		err = integration.Install(exe, a.Cfg.Get().Language)
 	} else {
 		err = integration.Uninstall()

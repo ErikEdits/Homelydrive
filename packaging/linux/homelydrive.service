@@ -1,0 +1,15 @@
+[Unit]
+Description=Homelydrive Server (eigene Cloud über Tailscale)
+Documentation=https://github.com/ErikEdits/Homelydrive
+After=network-online.target tailscaled.service
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/bin/homelydrive-server --data /var/lib/homelydrive run
+Restart=always
+RestartSec=5
+# Uploads of any size: allow many open files during big transfers.
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

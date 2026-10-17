@@ -131,7 +131,7 @@ func ensureRunning() error {
 	if app.Running() {
 		return nil
 	}
-	exe, err := os.Executable()
+	exe, err := integration.SelfPath()
 	if err != nil {
 		return err
 	}
@@ -198,7 +198,7 @@ func integrationCmd(args []string) error {
 		cfg.Update(func(c *config.Config) { c.Integration = true }) // do not reinstall automatically
 		return integration.Uninstall()
 	}
-	exe, err := os.Executable()
+	exe, err := integration.SelfPath()
 	if err != nil {
 		return err
 	}

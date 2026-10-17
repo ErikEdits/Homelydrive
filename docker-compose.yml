@@ -1,0 +1,20 @@
+# Homelydrive Server with Docker (optional).
+#   docker compose up -d
+# Tailscale must run on the host; host networking lets the server find it.
+# Server window: open http://127.0.0.1:8420/admin/ in a browser on the host.
+services:
+  homelydrive:
+    image: ghcr.io/erikedits/homelydrive:latest
+    # build: .
+    container_name: homelydrive
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      # Creates the first administrator on the first start (remove afterwards).
+      HOMELYDRIVE_ADMIN_USER: admin
+      HOMELYDRIVE_ADMIN_PASSWORD: change-me
+      TZ: Europe/Berlin
+    volumes:
+      - ./homelydrive-data:/data
+      # More disks: mount them here and add them in the server window.
+      # - /mnt/disk2:/mnt/disk2

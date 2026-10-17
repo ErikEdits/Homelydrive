@@ -62,7 +62,7 @@ func main() {
 	fs.Usage = func() { fmt.Fprintf(os.Stderr, usage, version.Version, config.DefaultDataDir()) }
 	fs.Parse(os.Args[1:])
 	args := fs.Args()
-	cmd := "run"
+	cmd := defaultCommand()
 	if len(args) > 0 {
 		cmd, args = args[0], args[1:]
 	}
@@ -125,6 +125,9 @@ func (p *program) Stop(s service.Service) error {
 
 func serviceConfig(dataDir string) *service.Config {
 	exe, _ := os.Executable()
+	if p := os.Getenv("APPIMAGE"); p != "" {
+		exe = p // the AppImage file, not its temporary mount
+	}
 	return &service.Config{
 		Name:        "homelydrive",
 		DisplayName: "Homelydrive Server",
