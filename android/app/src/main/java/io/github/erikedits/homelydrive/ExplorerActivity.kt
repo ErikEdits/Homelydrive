@@ -33,8 +33,8 @@ import java.util.concurrent.Executors
  */
 class ExplorerActivity : Activity() {
     /** One row: a file or folder, or a shortcut on the start screen. */
-    private class Entry(val file: File, val label: String? = null, val isRoot: Boolean = false, val info: String? = null) {
-        val isDir: Boolean = file.isDirectory
+    private class Entry(val file: File, val label: String? = null, val isRoot: Boolean = false, val info: String? = null, val gallery: Boolean = false) {
+        val isDir: Boolean = !gallery && file.isDirectory
         val name: String get() = label ?: file.name
     }
 
@@ -106,6 +106,7 @@ class ExplorerActivity : Activity() {
                     }
                 })
             }
+            addView(iconButton(context, R.drawable.ic_image, getString(R.string.gallery_title), R.color.brand) { openGallery() })
             addView(iconButton(context, R.drawable.ic_sort, getString(R.string.sort)) { toggleSort() })
         })
         root.addView(divider(this))
@@ -119,7 +120,7 @@ class ExplorerActivity : Activity() {
             isFastScrollEnabled = true
             setOnItemClickListener { _, _, pos, _ -> onTap(entries[pos]) }
             setOnItemLongClickListener { _, _, pos, _ ->
-                toggle(entries[pos])
+                if (entries[pos].gallery) openGallery() else toggle(entries[pos])
                 true
             }
         }
@@ -251,6 +252,7 @@ class ExplorerActivity : Activity() {
             titleView.text = getString(R.string.explorer_start)
             pathView.text = getString(if (mode == MODE_FOLDERS) R.string.explorer_title_folders else R.string.explorer_title_upload)
             val list = ArrayList<Entry>()
+            list += Entry(File("/"), getString(R.string.gallery_title), info = getString(R.string.gallery_entry_sub), gallery = true)
             Storage.roots(this).forEach { (label, f) -> list += Entry(f, label, isRoot = true) }
             show(list)
             // Folders with photos/videos (like Google Photos) and downloads, found automatically.
@@ -293,7 +295,14 @@ class ExplorerActivity : Activity() {
     // ----- selection -----
 
     /** Whole drives cannot be chosen; in folder mode only folders. */
-    private fun canSelect(e: Entry) = !e.isRoot && (mode == MODE_UPLOAD || e.isDir)
+    private fun canSelect(e: Entry) = !e.isRoot && !e.gallery && (mode == MODE_UPLOAD || e.isDir)
+
+    /** Photos and videos as albums, like Google Photos or the phone's gallery. */
+    private fun openGallery() {
+        @Suppress("DEPRECATION")
+        startActivityForResult(GalleryActivity.intent(this, mode)
+            .putExtra(EXTRA_SPACE, space).putExtra(EXTRA_PATH, target).putExtra(EXTRA_LABEL, targetLabel), REQ_GALLERY)
+    }
 
     /** The selection without items that lie inside another selected folder. */
     private fun topLevelSelection(): List<File> {
@@ -303,6 +312,7 @@ class ExplorerActivity : Activity() {
 
     private fun onTap(e: Entry) {
         when {
+            e.gallery -> openGallery()
             selected.isNotEmpty() && canSelect(e) -> toggle(e)
             e.isDir -> open(e.file)
             else -> toggle(e)
@@ -371,6 +381,12 @@ class ExplorerActivity : Activity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         @Suppress("DEPRECATION")
         super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQ_GALLERY && resultCode == RESULT_OK) {
+            // chosen or uploaded in the gallery: done
+            setResult(RESULT_OK, data)
+            finish()
+            return
+        }
         if (requestCode == REQ_TARGET && resultCode == RESULT_OK && data != null) {
             space = data.getStringExtra(FolderPickerActivity.EXTRA_SPACE) ?: "home"
             target = data.getStringExtra(FolderPickerActivity.EXTRA_PATH) ?: ""
@@ -473,6 +489,7 @@ class ExplorerActivity : Activity() {
             loadThumb(v, e.file, kind)
         }
         val res = when (kind) {
+            Kind.GALLERY -> R.drawable.ic_image
             Kind.ROOT -> R.drawable.ic_storage
             Kind.DIR -> R.drawable.ic_folder
             Kind.IMAGE -> R.drawable.ic_image
@@ -483,13 +500,14 @@ class ExplorerActivity : Activity() {
         val p = dp(8)
         v.setPadding(p, p, p, p)
         v.setImageResource(res)
-        v.imageTintList = ColorStateList.valueOf(col(if (kind == Kind.DIR || kind == Kind.ROOT) R.color.brand else R.color.text2))
+        v.imageTintList = ColorStateList.valueOf(col(if (kind == Kind.DIR || kind == Kind.ROOT || kind == Kind.GALLERY) R.color.brand else R.color.text2))
         v.background = rounded(col(R.color.surface2), dp(10).toFloat())
     }
 
-    private enum class Kind { ROOT, DIR, IMAGE, VIDEO, AUDIO, FILE }
+    private enum class Kind { GALLERY, ROOT, DIR, IMAGE, VIDEO, AUDIO, FILE }
 
     private fun kindOf(e: Entry): Kind {
+        if (e.gallery) return Kind.GALLERY
         if (e.isRoot) return Kind.ROOT
         if (e.isDir) return Kind.DIR
         return when (e.file.extension.lowercase()) {
@@ -546,6 +564,7 @@ class ExplorerActivity : Activity() {
         const val RESULT_SYSTEM_PICKER = RESULT_FIRST_USER
         private const val REQ_TARGET = 1
         private const val REQ_STORAGE = 2
+        private const val REQ_GALLERY = 3
 
         fun intent(ctx: Context, mode: String) = Intent(ctx, ExplorerActivity::class.java).putExtra(EXTRA_MODE, mode)
     }

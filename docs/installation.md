@@ -137,6 +137,7 @@ Neue Dateien werden **sofort** hochgeladen, auch im Hintergrund und nach einem N
 
 Weitere Funktionen:
 
+- **Galerie** (im Explorer oben das Bild-Symbol bzw. „Fotos & Videos hochladen“): Fotos und Videos in Alben wie bei Google Fotos oder der Galerie – Album öffnen, Fotos antippen, hochladen. Album lange drücken wählt das ganze Album. Beim Hinzufügen von Upload-Ordnern lassen sich hier ganze Alben antippen.
 - **Dateien vom Handy hochladen**: im Reiter *Hochladen* bzw. über den Hochladen-Knopf im Reiter *Dateien*. Im Explorer beliebig viele Dateien und ganze Ordner auswählen (lange drücken, dann weitere antippen) und in den gewählten Server-Ordner hochladen. Die Android-Auswahl ist dort über „Andere App“ weiterhin erreichbar.
 - **Dateien**-Reiter: die komplette Weboberfläche (Suchen, Teilen, Fotos, Papierkorb …), automatisch angemeldet.
 - **Android-„Dateien“-App**: Homelydrive erscheint dort als Speicherort; jede App kann Dateien direkt vom Server öffnen und dort speichern.

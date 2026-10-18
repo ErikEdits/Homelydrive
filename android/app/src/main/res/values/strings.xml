@@ -240,4 +240,22 @@
         <item quantity="one">%d video</item>
         <item quantity="other">%d videos</item>
     </plurals>
+
+    <!-- gallery -->
+    <string name="gallery_title">Gallery</string>
+    <string name="gallery_entry_sub">Photos and videos in albums, like Google Photos or the gallery</string>
+    <string name="gallery_all">All photos and videos</string>
+    <string name="gallery_hint">Open an album and tap photos to select them. Long-press an album to select all of it.</string>
+    <string name="gallery_hint_folders">Tap albums – their folders are then uploaded automatically.</string>
+    <string name="gallery_empty">No photos or videos found</string>
+    <string name="add_albums_n">Upload these albums automatically (%1$d)</string>
+    <string name="upload_photos_videos">Upload photos &amp; videos</string>
+    <plurals name="n_albums">
+        <item quantity="one">%d album</item>
+        <item quantity="other">%d albums</item>
+    </plurals>
+    <plurals name="n_items">
+        <item quantity="one">%d item</item>
+        <item quantity="other">%d items</item>
+    </plurals>
 </resources>

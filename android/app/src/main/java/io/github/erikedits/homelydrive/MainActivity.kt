@@ -473,6 +473,10 @@ class MainActivity : Activity() {
             })
         }
         l.addView(button(this, getString(R.string.add_folder)) { pickLocalFolders() }, lp().margins(this, t = 4))
+        l.addView(button(this, getString(R.string.upload_photos_videos), primary = false) {
+            @Suppress("DEPRECATION")
+            startActivityForResult(GalleryActivity.intent(this, ExplorerActivity.MODE_UPLOAD), REQ_EXPLORER)
+        }, lp().margins(this, t = 8))
         l.addView(button(this, getString(R.string.upload_files_from_phone), primary = false) {
             @Suppress("DEPRECATION")
             startActivityForResult(ExplorerActivity.intent(this, ExplorerActivity.MODE_UPLOAD), REQ_EXPLORER)

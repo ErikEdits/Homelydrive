@@ -238,4 +238,22 @@
         <item quantity="one">%d Video</item>
         <item quantity="other">%d Videos</item>
     </plurals>
+
+    <!-- gallery -->
+    <string name="gallery_title">Galerie</string>
+    <string name="gallery_entry_sub">Fotos und Videos in Alben, wie bei Google Fotos oder der Galerie</string>
+    <string name="gallery_all">Alle Fotos und Videos</string>
+    <string name="gallery_hint">Album öffnen und Fotos antippen zum Auswählen. Album lange drücken wählt das ganze Album.</string>
+    <string name="gallery_hint_folders">Alben antippen – ihre Ordner werden dann automatisch hochgeladen.</string>
+    <string name="gallery_empty">Keine Fotos oder Videos gefunden</string>
+    <string name="add_albums_n">Diese Alben automatisch hochladen (%1$d)</string>
+    <string name="upload_photos_videos">Fotos &amp; Videos hochladen</string>
+    <plurals name="n_albums">
+        <item quantity="one">%d Album</item>
+        <item quantity="other">%d Alben</item>
+    </plurals>
+    <plurals name="n_items">
+        <item quantity="one">%d Element</item>
+        <item quantity="other">%d Elemente</item>
+    </plurals>
 </resources>
