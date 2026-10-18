@@ -82,6 +82,11 @@ class Prefs(ctx: Context) {
         get() = sp.getString("manual_label", "") ?: ""
         set(v) = sp.edit().putString("manual_label", v).apply()
 
+    /** Found folders the user hid from the suggestions. */
+    var dismissedSuggestions: Set<String>
+        get() = HashSet(sp.getStringSet("dismissed_suggestions", emptySet()) ?: emptySet())
+        set(v) = sp.edit().putStringSet("dismissed_suggestions", HashSet(v)).apply()
+
     var scanTarget: String
         get() = sp.getString("scan_target", "Scans") ?: "Scans"
         set(v) = sp.edit().putString("scan_target", v).apply()

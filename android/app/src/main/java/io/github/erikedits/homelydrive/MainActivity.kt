@@ -27,6 +27,8 @@ import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Button
+import android.widget.CheckBox
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ProgressBar
@@ -118,6 +120,7 @@ class MainActivity : Activity() {
             return
         }
         UploadState.listen(stateListener)
+        suggestions = null // look again (new photo folders, access granted meanwhile)
         if (tab == TAB_UPLOADS) refreshUploads()
         if (tab == TAB_MORE) refreshMore()
     }
@@ -432,6 +435,8 @@ class MainActivity : Activity() {
         l.addView(statusCard)
         refreshStatus()
 
+        suggestionsCard()?.let { l.addView(it) }
+
         l.addView(heading(this, getString(R.string.phone_folders)))
         val folders = prefs.folders
         if (folders.isEmpty()) {
@@ -503,6 +508,97 @@ class MainActivity : Activity() {
                 setPadding(0, dp(4), 0, dp(4))
                 for (q in history) addView(queueRow(q))
             })
+        }
+    }
+
+    // ----- folders found automatically (like Google Photos) -----
+
+    private var suggestions: List<Storage.Found>? = null
+    private var suggestionsLoading = false
+    private val suggestionChecks = HashMap<String, Boolean>()
+    private var suggestionsExpanded = false
+
+    private fun loadSuggestions() {
+        if (suggestionsLoading || !hasStorageAccess()) return
+        suggestionsLoading = true
+        async({ Storage.suggestedFolders(this) }) { r ->
+            suggestionsLoading = false
+            suggestions = r.getOrDefault(emptyList())
+            if (tab == TAB_UPLOADS) refreshUploads()
+        }
+    }
+
+    /** "Found on this phone": photo/video folders and downloads with a tick to add them at once. */
+    private fun suggestionsCard(): View? {
+        val all = suggestions
+        if (all == null) {
+            loadSuggestions()
+            return null
+        }
+        val added = prefs.folders.map { it.local }.toSet()
+        val dismissed = prefs.dismissedSuggestions
+        val list = all.filter { it.dir.absolutePath !in added && it.dir.absolutePath !in dismissed }
+        if (list.isEmpty()) return null
+        list.forEach { suggestionChecks.getOrPut(it.dir.absolutePath) { it.recommended } }
+        lateinit var addButton: Button
+        fun ticked() = list.filter { suggestionChecks[it.dir.absolutePath] == true }
+        fun updateButton() {
+            val n = ticked().size
+            addButton.text = getString(R.string.found_add, n)
+            addButton.isEnabled = n > 0
+            addButton.alpha = if (n > 0) 1f else 0.5f
+        }
+        return card(this) {
+            addView(horizontal(context) {
+                addView(icon(context, R.drawable.ic_image, 24, R.color.brand))
+                addView(text(context, getString(R.string.found_title), 16f, true), lp(0, WRAP, 1f).margins(context, l = 12))
+            })
+            addView(text(context, getString(R.string.found_text), 13f, color = R.color.text2), lp().margins(context, t = 4, b = 6))
+            val shown = if (suggestionsExpanded) list else list.take(6)
+            for (f in shown) {
+                val path = f.dir.absolutePath
+                val cb = CheckBox(context).apply {
+                    isChecked = suggestionChecks[path] == true
+                    isClickable = false
+                    isFocusable = false
+                }
+                addView(horizontal(context) {
+                    setPadding(0, dp(4), 0, dp(4))
+                    addView(cb)
+                    addView(vertical(context) {
+                        addView(text(context, f.label, 15f, lines = 1))
+                        addView(text(context, f.info(context), 12f, color = R.color.text2, lines = 2))
+                    }, lp(0, WRAP, 1f).margins(context, l = 6))
+                    background = selectable(context)
+                    setOnClickListener {
+                        suggestionChecks[path] = suggestionChecks[path] != true
+                        cb.isChecked = suggestionChecks[path] == true
+                        updateButton()
+                    }
+                })
+            }
+            if (list.size > shown.size) {
+                addView(text(context, getString(R.string.found_more, list.size), 14f, true, R.color.brand).apply {
+                    setPadding(dp(4), dp(10), dp(4), dp(6))
+                    setOnClickListener {
+                        suggestionsExpanded = true
+                        refreshUploads()
+                    }
+                })
+            }
+            addView(horizontal(context) {
+                setPadding(0, dp(10), 0, 0)
+                addButton = button(context, "") { addFolders(ticked().map { it.dir.absolutePath }) }
+                addView(addButton, lp(0, WRAP, 1f))
+                addView(text(context, getString(R.string.found_hide), 14f, true, R.color.text2).apply {
+                    setPadding(dp(14), dp(10), dp(6), dp(10))
+                    setOnClickListener {
+                        prefs.dismissedSuggestions = dismissed + list.map { it.dir.absolutePath }
+                        refreshUploads()
+                    }
+                })
+            })
+            updateButton()
         }
     }
 

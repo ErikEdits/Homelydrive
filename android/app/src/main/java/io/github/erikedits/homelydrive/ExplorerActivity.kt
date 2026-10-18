@@ -33,7 +33,7 @@ import java.util.concurrent.Executors
  */
 class ExplorerActivity : Activity() {
     /** One row: a file or folder, or a shortcut on the start screen. */
-    private class Entry(val file: File, val label: String? = null, val isRoot: Boolean = false) {
+    private class Entry(val file: File, val label: String? = null, val isRoot: Boolean = false, val info: String? = null) {
         val isDir: Boolean = file.isDirectory
         val name: String get() = label ?: file.name
     }
@@ -252,8 +252,12 @@ class ExplorerActivity : Activity() {
             pathView.text = getString(if (mode == MODE_FOLDERS) R.string.explorer_title_folders else R.string.explorer_title_upload)
             val list = ArrayList<Entry>()
             Storage.roots(this).forEach { (label, f) -> list += Entry(f, label, isRoot = true) }
-            Storage.quickFolders(this).forEach { (label, f) -> list += Entry(f, label) }
             show(list)
+            // Folders with photos/videos (like Google Photos) and downloads, found automatically.
+            async({ Storage.suggestedFolders(this).map { Entry(it.dir, it.label, info = it.info(this)) } }) { r ->
+                if (token != loadToken) return@async
+                show(list + r.getOrDefault(emptyList()))
+            }
             return
         }
         titleView.text = Storage.roots(this).find { it.second == d }?.first ?: d.name
@@ -409,6 +413,7 @@ class ExplorerActivity : Activity() {
             h.title.text = e.name
             h.sub.text = when {
                 e.isRoot -> e.file.absolutePath
+                e.info != null -> e.info
                 e.label != null -> Storage.display(ctx, e.file.absolutePath)
                 e.isDir -> formatTime(e.file.lastModified())
                 else -> formatSize(e.file.length()) + " · " + formatTime(e.file.lastModified())

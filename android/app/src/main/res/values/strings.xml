@@ -216,9 +216,6 @@
     <string name="quick_pictures">Pictures</string>
     <string name="quick_downloads">Downloads</string>
     <string name="quick_documents">Documents</string>
-    <string name="quick_whatsapp">WhatsApp media</string>
-    <string name="quick_telegram">Telegram</string>
-    <string name="quick_music">Music</string>
     <string name="quick_movies">Videos</string>
     <plurals name="n_selected">
         <item quantity="one">%d selected</item>
@@ -227,5 +224,20 @@
     <plurals name="folders_added">
         <item quantity="one">%d folder added</item>
         <item quantity="other">%d folders added</item>
+    </plurals>
+
+    <!-- found folders -->
+    <string name="found_title">Found on this phone</string>
+    <string name="found_text">Folders with photos and videos (like Google Photos) and your downloads. Tick what should be uploaded automatically.</string>
+    <string name="found_add">Add selected (%1$d)</string>
+    <string name="found_more">Show all (%1$d)</string>
+    <string name="found_hide">Hide</string>
+    <plurals name="n_photos">
+        <item quantity="one">%d photo</item>
+        <item quantity="other">%d photos</item>
+    </plurals>
+    <plurals name="n_videos">
+        <item quantity="one">%d video</item>
+        <item quantity="other">%d videos</item>
     </plurals>
 </resources>
