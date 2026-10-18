@@ -158,6 +158,9 @@ Adresse: `http://mein-pc:8420/dav/` (Anmeldung mit Benutzername und Passwort). D
 
 ## 9. Häufige Fragen
 
+**Der Virenschutz (Norton, Avast, AVG …) blockiert oder löscht Homelydrive.**
+Die Programme sind noch nicht digital signiert; manche Virenschutz-Programme halten neue, unbekannte Programme deshalb für verdächtig. Typisch bei Norton: Das Server-Fenster geht kurz auf, schließt sich wieder und alles ist verschwunden. Abhilfe: im Virenschutz die Ordner `C:\Program Files\Homelydrive Server`, `C:\Program Files\Homelydrive` und `C:\ProgramData\Homelydrive` als Ausnahme eintragen (bei Norton: *Einstellungen → Antivirus → Scans und Risiken → Ausschlüsse/Niedrige Risiken*, dort bei beiden Listen „Konfigurieren“ → „Ordner hinzufügen“), Einträge in der Quarantäne wiederherstellen und den Installer erneut ausführen. Den Fehlalarm kann man dem Hersteller melden (Norton: <https://submit.norton.com/?type=FP>).
+
 **Die App findet den Server nicht.**
 Ist Tailscale auf beiden Geräten eingeschaltet und im selben Konto? Läuft der Server (Server-Fenster → Übersicht)? Die richtige Adresse steht im Server-Fenster.
 
