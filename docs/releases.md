@@ -23,9 +23,19 @@ Ein Probelauf ohne Veröffentlichung: *Actions → Release → Run workflow* (di
 
 Server und Apps prüfen regelmäßig über die GitHub-API (der Server stündlich, die Apps täglich), ob es eine neuere Version gibt, und zeigen dann einen Hinweis.
 
-## Android: eigener Signierschlüssel
+## Android: fester Signierschlüssel (wichtig für Updates)
 
-Android installiert ein Update nur, wenn es mit **demselben Schlüssel** signiert ist wie die installierte Version. Ohne eigenen Schlüssel signiert der Release-Lauf mit einem wechselnden Debug-Schlüssel – dann muss die App vor jedem Update deinstalliert werden. Darum einmalig einen Schlüssel anlegen:
+Android installiert ein Update nur, wenn es mit **demselben Schlüssel** signiert ist wie die installierte App – sonst kommt „App nicht installiert“. Ohne Schlüssel signiert der Release-Lauf mit einem wechselnden Einmal-Schlüssel, und die App muss vor jedem Update deinstalliert werden.
+
+**Einrichten (einmalig, 2 Minuten):**
+
+1. Im Repository auf GitHub: *Settings → Secrets and variables → Actions → New repository secret*
+2. Name: `HD_SIGNING_PASSWORD`
+3. Wert: ein langes, zufälliges Passwort (z. B. 30+ Zeichen aus einem Passwort-Manager). **Gut aufheben** – ohne dieses Passwort kann niemand mehr Updates bauen, die sich über die installierte App installieren lassen.
+
+Beim nächsten Release erzeugt der Workflow den Schlüssel selbst, verschlüsselt ihn mit diesem Passwort und legt ihn als `android/signing/release.p12.enc` im Repository ab. Ab dann sind alle APKs gleich signiert. (Einmalig muss eine App, die noch mit einem Einmal-Schlüssel signiert war, deinstalliert werden.)
+
+**Alternative – eigener Keystore:**
 
 ```sh
 keytool -genkeypair -v -keystore homelydrive.keystore -alias homelydrive \
@@ -33,16 +43,7 @@ keytool -genkeypair -v -keystore homelydrive.keystore -alias homelydrive \
 base64 -w0 homelydrive.keystore > keystore.txt
 ```
 
-Dann im Repository unter *Settings → Secrets and variables → Actions* vier Secrets anlegen:
-
-| Secret | Inhalt |
-|---|---|
-| `HD_KEYSTORE_BASE64` | Inhalt von `keystore.txt` |
-| `HD_KEYSTORE_PASSWORD` | Passwort des Keystores |
-| `HD_KEY_ALIAS` | `homelydrive` |
-| `HD_KEY_PASSWORD` | Passwort des Schlüssels |
-
-Den Keystore gut aufheben (nicht ins Repository!) – geht er verloren, können bestehende Installationen keine Updates mehr bekommen.
+Dann die Secrets `HD_KEYSTORE_BASE64` (Inhalt von `keystore.txt`), `HD_KEYSTORE_PASSWORD`, `HD_KEY_ALIAS` (`homelydrive`) und `HD_KEY_PASSWORD` anlegen. Sind diese gesetzt, haben sie Vorrang.
 
 ## F-Droid
 
