@@ -174,3 +174,86 @@ func wait(t *testing.T, fn func() bool) {
 	}
 	t.Fatal("timeout")
 }
+
+// Saving a file again while its previous version is still being uploaded
+// must upload the new version too (it used to be deleted by the finished
+// upload of the old one).
+func TestDriveRewriteWhileUploading(t *testing.T) {
+	if _, err := os.Stat("/dev/fuse"); err != nil {
+		t.Skip("no /dev/fuse")
+	}
+	if _, err := exec.LookPath("fusermount"); err != nil {
+		t.Skip("no fusermount")
+	}
+	dir := t.TempDir()
+	scfg, _ := sconfig.Load(dir)
+	database, err := db.OpenFile(filepath.Join(dir, "s.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer database.Close()
+	log := slog.New(slog.NewTextHandler(io.Discard, nil))
+	c, _ := core.New(database, scfg, dir, log)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	c.Start(ctx)
+	srv := httptest.NewServer((&api.Server{Core: c, Cfg: scfg, Log: log, Logs: logbuf.New(10, "", nil), Started: time.Now()}).Handler())
+	defer srv.Close()
+	c.CreateUser(core.NewUser{Username: "erik", Password: "geheim123"})
+	tok, _, err := remote.Login(ctx, srv.URL, "erik", "geheim123", "drive-test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	rc := remote.New(srv.URL, tok)
+
+	// The upload function records what it was given and finishes only when
+	// the test says so.
+	type upload struct {
+		content string
+		done    func(error)
+	}
+	uploads := make(chan upload, 4)
+	d := drive.New(func() *remote.Client { return rc }, func(local, space, rp string, done func(error)) {
+		b, _ := os.ReadFile(local)
+		uploads <- upload{string(b), done}
+	}, "de", filepath.Join(t.TempDir(), "cache"), 64, log)
+	d.IsJunk = engine.IsJunk
+	mnt := filepath.Join(t.TempDir(), "mnt")
+	if err := d.Mount(mnt); err != nil {
+		t.Skipf("cannot mount: %v", err)
+	}
+	defer d.Unmount()
+	file := filepath.Join(mnt, "Meine Ablage", "liste.txt")
+
+	next := func() upload {
+		t.Helper()
+		select {
+		case u := <-uploads:
+			return u
+		case <-time.After(10 * time.Second):
+			t.Fatal("no upload")
+			return upload{}
+		}
+	}
+
+	if err := os.WriteFile(file, []byte("eins"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	first := next()
+	if first.content != "eins" {
+		t.Fatalf("first upload: %q", first.content)
+	}
+	// Save again while the first upload is still running.
+	if err := os.WriteFile(file, []byte("zwei"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	first.done(nil)
+	if got, _ := os.ReadFile(file); string(got) != "zwei" {
+		t.Fatalf("read back: %q", got)
+	}
+	second := next()
+	if second.content != "zwei" {
+		t.Fatalf("second upload: %q", second.content)
+	}
+	second.done(nil)
+}

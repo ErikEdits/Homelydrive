@@ -91,6 +91,7 @@ type pendingFile struct {
 	rpath     string
 	open      int
 	timer     *time.Timer
+	changed   bool // written by a handle that is closed already
 	submitted bool
 }
 
@@ -592,6 +593,35 @@ func (d *Drive) Open(p string, flags int) (int, uint64) {
 	write := flags&fuse.O_ACCMODE != fuse.O_RDONLY
 	d.mu.Lock()
 	pf, isPending := d.pending[cp]
+	if isPending && pf.submitted && write {
+		// The last version is being uploaded right now: leave its temp file
+		// alone and write the new version into a fresh one (otherwise the
+		// finished upload would delete the new content).
+		var prev *os.File
+		if flags&fuse.O_TRUNC == 0 {
+			prev, _ = os.Open(pf.tmp)
+		}
+		space, rpath := pf.space, pf.rpath
+		d.mu.Unlock()
+		f, err := d.newTemp()
+		if err == nil && prev != nil {
+			_, err = io.Copy(f, prev)
+		}
+		if prev != nil {
+			prev.Close()
+		}
+		if err != nil {
+			if f != nil {
+				f.Close()
+				os.Remove(f.Name())
+			}
+			return -fuse.EIO, ^uint64(0)
+		}
+		d.mu.Lock()
+		d.pending[cp] = &pendingFile{tmp: f.Name(), space: space, rpath: rpath, open: 1}
+		d.mu.Unlock()
+		return 0, d.addHandle(&handle{path: cp, space: space, rpath: rpath, write: true, tmp: f, dirty: flags&fuse.O_TRUNC != 0})
+	}
 	if isPending {
 		pf.open++
 		if pf.timer != nil {
@@ -668,9 +698,9 @@ func (d *Drive) Create(p string, flags int, mode uint32) (int, uint64) {
 	}
 	rpath := path.Join(n.rpath, path.Base(cp))
 	d.mu.Lock()
-	if old, ok := d.pending[cp]; ok && old.timer != nil {
+	if old, ok := d.pending[cp]; ok && old.timer != nil && !old.submitted {
 		old.timer.Stop()
-		os.Remove(old.tmp)
+		os.Remove(old.tmp) // an upload in progress keeps its file
 	}
 	d.pending[cp] = &pendingFile{tmp: f.Name(), space: n.space, rpath: rpath, open: 1}
 	d.mu.Unlock()
@@ -727,14 +757,19 @@ func (d *Drive) Truncate(p string, size int64, fh uint64) int {
 	cp := path.Clean("/" + filepath.ToSlash(p))
 	d.mu.Lock()
 	pf, ok := d.pending[cp]
+	if ok && !pf.submitted {
+		pf.changed = true
+	}
 	d.mu.Unlock()
-	if ok {
+	if ok && !pf.submitted {
 		if err := os.Truncate(pf.tmp, size); err != nil {
 			return -fuse.EIO
 		}
+		d.scheduleCommit(cp)
 		return 0
 	}
-	// Truncating a remote file without an open handle: open, truncate, save.
+	// Truncating without an open handle (or while the last version uploads):
+	// open a writable copy, truncate, save.
 	errc, nfh := d.Open(p, fuse.O_RDWR)
 	if errc != 0 {
 		return errc
@@ -766,12 +801,16 @@ func (d *Drive) Release(p string, fh uint64) int {
 	pf, ok := d.pending[h.path]
 	if ok {
 		pf.open--
+		if h.dirty {
+			pf.changed = true
+		}
 	}
 	d.mu.Unlock()
-	if !ok {
+	if !ok || pf.open > 0 || pf.submitted {
+		// Still open elsewhere, or uploading (the upload cleans up when done).
 		return 0
 	}
-	if !h.dirty && pf.open <= 0 {
+	if !pf.changed {
 		// Opened for writing but nothing changed.
 		d.mu.Lock()
 		delete(d.pending, h.path)
