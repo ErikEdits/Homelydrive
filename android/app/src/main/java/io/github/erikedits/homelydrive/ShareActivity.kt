@@ -116,7 +116,7 @@ class ShareActivity : Activity() {
 
     private fun pickTarget() {
         @Suppress("DEPRECATION")
-        startActivityForResult(FolderPickerActivity.intent(this, FolderPickerActivity.MODE_REMOTE, getString(R.string.target_folder)), REQ_TARGET)
+        startActivityForResult(FolderPickerActivity.intent(this, getString(R.string.target_folder)), REQ_TARGET)
     }
 
     @Deprecated("Deprecated in Java")

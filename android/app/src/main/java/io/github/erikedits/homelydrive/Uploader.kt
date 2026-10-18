@@ -154,6 +154,36 @@ class Uploader(private val ctx: Context) {
     fun enqueueFile(kind: String, file: File, space: String, remote: String, conflict: String = "rename", temp: Boolean = true): Long =
         db.enqueue(kind, "", file.absolutePath, "", space, remote, file.length(), file.lastModified(), conflict, temp)
 
+    /**
+     * Queues phone files and whole folders (with their subfolders, keeping the
+     * structure) for a one-time upload. The files are read where they are.
+     * Returns the number of queued files.
+     */
+    fun enqueueLocal(items: List<File>, space: String, target: String): Int {
+        var n = 0
+        val sql = db.writableDatabase
+        sql.beginTransaction()
+        try {
+            for (f in items) {
+                if (f.isDirectory) {
+                    val base = joinPath(target, f.name)
+                    walk(f, "") { file, rel ->
+                        db.enqueue("manual", "", file.absolutePath, "", space, joinPath(base, rel), file.length(), file.lastModified(), "rename", false)
+                        n++
+                    }
+                } else if (f.isFile) {
+                    db.enqueue("manual", "", f.absolutePath, "", space, joinPath(target, f.name), f.length(), f.lastModified(), "rename", false)
+                    n++
+                }
+            }
+            sql.setTransactionSuccessful()
+        } finally {
+            sql.endTransaction()
+        }
+        UploadState.changed()
+        return n
+    }
+
     /** Removes finished entries and the app's own copies they still hold. */
     fun clearHistory() {
         for (i in db.history(5000)) if (i.temp) File(i.local).delete()

@@ -51,6 +51,7 @@ class MainActivity : Activity() {
     private var webError: View? = null
     private var webErrorText: TextView? = null
     private var fileCallback: ValueCallback<Array<Uri>>? = null
+    private var chooserParams: WebChromeClient.FileChooserParams? = null
 
     private lateinit var uploadsList: LinearLayout
     private lateinit var moreList: LinearLayout
@@ -232,16 +233,20 @@ class MainActivity : Activity() {
             override fun onShowFileChooser(view: WebView, callback: ValueCallback<Array<Uri>>, params: FileChooserParams): Boolean {
                 fileCallback?.onReceiveValue(null)
                 fileCallback = callback
-                val i = params.createIntent()
-                if (params.mode == FileChooserParams.MODE_OPEN_MULTIPLE) i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-                return try {
+                chooserParams = params
+                // Uploads into a drive folder go through the app's own explorer (files and whole
+                // folders, several at once); Android's picker stays available from there.
+                val t = webUploadTarget(view.url)
+                if (t != null) {
                     @Suppress("DEPRECATION")
-                    startActivityForResult(i, REQ_FILE)
-                    true
-                } catch (e: ActivityNotFoundException) {
-                    fileCallback = null
-                    false
+                    startActivityForResult(ExplorerActivity.intent(this@MainActivity, ExplorerActivity.MODE_UPLOAD)
+                        .putExtra(ExplorerActivity.EXTRA_SPACE, t.first)
+                        .putExtra(ExplorerActivity.EXTRA_PATH, t.second)
+                        .putExtra(ExplorerActivity.EXTRA_LABEL, targetLabel(t.first, t.second))
+                        .putExtra(ExplorerActivity.EXTRA_SYSTEM_PICKER, true), REQ_EXPLORER_WEB)
+                    return true
                 }
+                return openSystemChooser(params)
             }
 
             // Full screen videos
@@ -280,6 +285,38 @@ class MainActivity : Activity() {
         webView = wv
         filesRoot = frame
         return frame
+    }
+
+    /** Android's own file picker for the web interface. */
+    private fun openSystemChooser(params: WebChromeClient.FileChooserParams): Boolean {
+        val i = params.createIntent()
+        if (params.mode == WebChromeClient.FileChooserParams.MODE_OPEN_MULTIPLE) i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+        return try {
+            @Suppress("DEPRECATION")
+            startActivityForResult(i, REQ_FILE)
+            true
+        } catch (e: ActivityNotFoundException) {
+            fileCallback = null
+            false
+        }
+    }
+
+    /**
+     * The server folder an upload in the web interface goes to, from its address
+     * (#/drive/<space>/<path>); null where the app's explorer does not fit (vault,
+     * public link pages).
+     */
+    private fun webUploadTarget(url: String?): Pair<String, String>? {
+        val u = Uri.parse(url ?: return null)
+        if (!sameServer(u)) return null
+        val p = u.path ?: "/"
+        if (p != "/" && p != "/index.html") return null
+        val parts = (u.encodedFragment ?: "").substringBefore('?').split('/').filter { it.isNotEmpty() }.map { Uri.decode(it) }
+        return when (parts.firstOrNull() ?: "drive") {
+            "drive" -> parts.getOrElse(1) { "home" } to parts.drop(2).joinToString("/")
+            "vault" -> null
+            else -> "home" to ""
+        }
     }
 
     private fun sameServer(u: Uri): Boolean {
@@ -331,9 +368,17 @@ class MainActivity : Activity() {
                 if (list.isEmpty()) data.data?.let { list += it }
                 cb.onReceiveValue(list.toTypedArray())
             }
+            REQ_EXPLORER_WEB -> {
+                val p = chooserParams
+                chooserParams = null
+                if (resultCode == ExplorerActivity.RESULT_SYSTEM_PICKER && p != null && openSystemChooser(p)) return
+                // uploaded by the app (or cancelled): the web page refreshes by itself when files arrive
+                fileCallback?.onReceiveValue(null)
+                fileCallback = null
+            }
+            REQ_EXPLORER -> if (resultCode == RESULT_OK) refreshUploads()
             REQ_LOCAL_FOLDER -> if (resultCode == RESULT_OK && data != null) {
-                val path = data.getStringExtra(FolderPickerActivity.EXTRA_PATH) ?: return
-                addFolder(path)
+                addFolders(data.getStringArrayListExtra(ExplorerActivity.EXTRA_PATHS) ?: return)
             }
             REQ_REMOTE_FOLDER -> if (resultCode == RESULT_OK && data != null) {
                 val id = data.getStringExtra(EXTRA_FOLDER_ID) ?: return
@@ -399,7 +444,7 @@ class MainActivity : Activity() {
                 addView(horizontal(context) {
                     addView(vertical(context) {
                         setPadding(dp(8), dp(4), 0, dp(4))
-                        addView(text(context, FolderPickerActivity.displayLocal(context, f.local), 15f, true, lines = 2))
+                        addView(text(context, Storage.display(context, f.local), 15f, true, lines = 2))
                         addView(text(context, "→ " + targetLabel(f.space, f.remote), 14f, color = R.color.text2, lines = 2))
                         val n = db.seenCount(f.id)
                         val extra = when (f.deleteAfterDays) {
@@ -422,9 +467,11 @@ class MainActivity : Activity() {
                 setOnClickListener { editFolder(f.id) }
             })
         }
-        l.addView(button(this, getString(R.string.add_folder)) {
-            if (!hasStorageAccess()) requestStorageAccess() else pickLocalFolder()
-        }, lp().margins(this, t = 4))
+        l.addView(button(this, getString(R.string.add_folder)) { pickLocalFolders() }, lp().margins(this, t = 4))
+        l.addView(button(this, getString(R.string.upload_files_from_phone), primary = false) {
+            @Suppress("DEPRECATION")
+            startActivityForResult(ExplorerActivity.intent(this, ExplorerActivity.MODE_UPLOAD), REQ_EXPLORER)
+        }, lp().margins(this, t = 8))
         l.addView(text(this, getString(R.string.archive_mode_hint), 13f, color = R.color.text2).apply {
             setPadding(dp(4), dp(12), dp(4), 0)
         })
@@ -566,60 +613,51 @@ class MainActivity : Activity() {
 
     // ----- upload folders -----
 
-    private fun hasStorageAccess(): Boolean = if (Build.VERSION.SDK_INT >= 30) {
-        Environment.isExternalStorageManager()
-    } else {
-        checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-    }
+    private fun hasStorageAccess() = Storage.hasAccess(this)
 
-    private fun requestStorageAccess() {
-        if (Build.VERSION.SDK_INT >= 30) {
-            try {
-                startActivity(Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:$packageName")))
-            } catch (e: ActivityNotFoundException) {
-                startActivity(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION))
-            }
-        } else {
-            requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE), REQ_STORAGE)
-        }
-    }
+    private fun requestStorageAccess() = Storage.requestAccess(this, REQ_STORAGE)
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQ_STORAGE) refreshUploads()
     }
 
-    private fun pickLocalFolder() {
+    /** Opens the explorer to choose one or more phone folders that are uploaded automatically. */
+    private fun pickLocalFolders() {
         @Suppress("DEPRECATION")
-        startActivityForResult(FolderPickerActivity.intent(this, FolderPickerActivity.MODE_LOCAL, getString(R.string.pick_phone_folder)), REQ_LOCAL_FOLDER)
+        startActivityForResult(ExplorerActivity.intent(this, ExplorerActivity.MODE_FOLDERS), REQ_LOCAL_FOLDER)
     }
 
-    private fun addFolder(path: String) {
+    private fun addFolders(paths: List<String>) {
         val existing = prefs.folders
-        if (existing.any { it.local == path }) {
+        val fresh = paths.distinct().filter { p -> existing.none { it.local == p } }
+        if (fresh.isEmpty()) {
             toast(getString(R.string.folder_exists))
             return
         }
-        val name = path.trimEnd('/').substringAfterLast('/')
-        val f = UploadFolder(local = path, remote = Uploader.joinPath(prefs.deviceName, name))
-        prefs.folders = existing + f
+        val added = fresh.map { p -> UploadFolder(local = p, remote = Uploader.joinPath(prefs.deviceName, p.trimEnd('/').substringAfterLast('/'))) }
+        prefs.folders = existing + added
         folderSettingsChanged()
         refreshUploads()
-        editFolder(f.id, isNew = true)
+        if (added.size == 1) {
+            editFolder(added[0].id, isNew = true)
+        } else {
+            toast(resources.getQuantityString(R.plurals.folders_added, added.size, added.size))
+        }
     }
 
     private fun editFolder(id: String, isNew: Boolean = false) {
         val f = prefs.folders.find { it.id == id } ?: return
         val box = vertical(this, 20)
         box.addView(text(this, getString(R.string.phone_folder), 13f, true, R.color.text2))
-        box.addView(text(this, FolderPickerActivity.displayLocal(this, f.local), 15f), lp().margins(this, b = 12))
+        box.addView(text(this, Storage.display(this, f.local), 15f), lp().margins(this, b = 12))
         box.addView(text(this, getString(R.string.target_folder), 13f, true, R.color.text2))
         box.addView(horizontal(this) {
             addView(text(context, targetLabel(f.space, f.remote), 15f, lines = 2), lp(0, WRAP, 1f))
             addView(text(context, getString(R.string.change), 14f, true, R.color.brand).apply { setPadding(dp(12), dp(8), 0, dp(8)) })
             setOnClickListener {
                 @Suppress("DEPRECATION")
-                startActivityForResult(FolderPickerActivity.intent(this@MainActivity, FolderPickerActivity.MODE_REMOTE, getString(R.string.target_folder))
+                startActivityForResult(FolderPickerActivity.intent(this@MainActivity, getString(R.string.target_folder))
                     .putExtra(EXTRA_FOLDER_ID, f.id), REQ_REMOTE_FOLDER)
             }
         }, lp().margins(this, b = 12))
@@ -751,12 +789,12 @@ class MainActivity : Activity() {
             setPadding(0, dp(4), 0, dp(4))
             addView(row(context, R.drawable.ic_folder, getString(R.string.share_target_label), targetLabel(prefs.shareSpace, prefs.shareTarget)) {
                 @Suppress("DEPRECATION")
-                startActivityForResult(FolderPickerActivity.intent(this@MainActivity, FolderPickerActivity.MODE_REMOTE, getString(R.string.share_target_label)), REQ_SHARE_TARGET)
+                startActivityForResult(FolderPickerActivity.intent(this@MainActivity, getString(R.string.share_target_label)), REQ_SHARE_TARGET)
             })
             addView(divider(context))
             addView(row(context, R.drawable.ic_scan, getString(R.string.scan_target_label), targetLabel(prefs.scanSpace, prefs.scanTarget)) {
                 @Suppress("DEPRECATION")
-                startActivityForResult(FolderPickerActivity.intent(this@MainActivity, FolderPickerActivity.MODE_REMOTE, getString(R.string.scan_target_label)), REQ_SCAN_TARGET)
+                startActivityForResult(FolderPickerActivity.intent(this@MainActivity, getString(R.string.scan_target_label)), REQ_SCAN_TARGET)
             })
         })
 
@@ -862,5 +900,7 @@ class MainActivity : Activity() {
         private const val REQ_SCAN_TARGET = 5
         private const val REQ_NOTIFY = 6
         private const val REQ_STORAGE = 7
+        private const val REQ_EXPLORER = 8
+        private const val REQ_EXPLORER_WEB = 9
     }
 }

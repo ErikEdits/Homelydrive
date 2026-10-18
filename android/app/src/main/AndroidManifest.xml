@@ -67,6 +67,11 @@
             android:exported="false" />
 
         <activity
+            android:name=".ExplorerActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
+
+        <activity
             android:name=".ScannerActivity"
             android:exported="false"
             android:configChanges="orientation|screenSize" />

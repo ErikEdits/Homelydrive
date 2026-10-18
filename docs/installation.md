@@ -130,13 +130,14 @@ Die App startet nicht automatisch mit dem PC. Wer das möchte, legt eine Verknü
 1. `Homelydrive-x.y.z.apk` auf dem Handy herunterladen und öffnen. Android fragt einmal, ob der Browser/Dateimanager Apps installieren darf („Unbekannte Apps installieren“).
 2. **Tailscale-App** auf dem Handy einschalten.
 3. In Homelydrive Server-Adresse, Benutzername und Passwort eingeben.
-4. Reiter **Hochladen** → **Ordner hinzufügen**: beliebige Ordner wählen (Kamera, WhatsApp-Bilder, Downloads, Dokumente …). Beim ersten Mal fragt Android nach dem **Zugriff auf alle Dateien** – das ist nötig, damit jeder Ordner gewählt werden kann.
+4. Reiter **Hochladen** → **Ordner hinzufügen**: Es öffnet sich der eingebaute Datei-Explorer. Tippen öffnet einen Ordner, **lange drücken wählt aus** – so lassen sich mehrere Ordner auf einmal wählen (Kamera, WhatsApp-Bilder, Downloads, Dokumente …). Beim ersten Mal fragt Android nach dem **Zugriff auf alle Dateien** – das ist nötig, damit jeder Ordner gewählt werden kann.
 5. Für jeden Ordner lässt sich der **Zielordner** auf dem Server festlegen und ob die Dateien nach dem Hochladen **auf dem Handy gelöscht** werden sollen (nie, sofort, nach 7/30/90 Tagen).
 
 Neue Dateien werden **sofort** hochgeladen, auch im Hintergrund und nach einem Neustart. Damit Android das nicht unterbricht, unter **Mehr → Im Hintergrund laufen** die Akku-Optimierung für Homelydrive ausschalten.
 
 Weitere Funktionen:
 
+- **Dateien vom Handy hochladen**: im Reiter *Hochladen* bzw. über den Hochladen-Knopf im Reiter *Dateien*. Im Explorer beliebig viele Dateien und ganze Ordner auswählen (lange drücken, dann weitere antippen) und in den gewählten Server-Ordner hochladen. Die Android-Auswahl ist dort über „Andere App“ weiterhin erreichbar.
 - **Dateien**-Reiter: die komplette Weboberfläche (Suchen, Teilen, Fotos, Papierkorb …), automatisch angemeldet.
 - **Android-„Dateien“-App**: Homelydrive erscheint dort als Speicherort; jede App kann Dateien direkt vom Server öffnen und dort speichern.
 - **Teilen-Menü**: in jeder App „Teilen“ → „In Homelydrive hochladen“.

@@ -69,6 +69,19 @@ class Prefs(ctx: Context) {
         get() = sp.getString("scan_space", "home") ?: "home"
         set(v) = sp.edit().putString("scan_space", v).apply()
 
+    /** Last target of "upload files from phone". */
+    var manualSpace: String
+        get() = sp.getString("manual_space", "home") ?: "home"
+        set(v) = sp.edit().putString("manual_space", v).apply()
+
+    var manualTarget: String
+        get() = sp.getString("manual_target", "") ?: ""
+        set(v) = sp.edit().putString("manual_target", v).apply()
+
+    var manualLabel: String
+        get() = sp.getString("manual_label", "") ?: ""
+        set(v) = sp.edit().putString("manual_label", v).apply()
+
     var scanTarget: String
         get() = sp.getString("scan_target", "Scans") ?: "Scans"
         set(v) = sp.edit().putString("scan_target", v).apply()

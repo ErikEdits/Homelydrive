@@ -88,7 +88,7 @@ class ScannerActivity : Activity() {
                 background = selectable(context)
                 setOnClickListener {
                     @Suppress("DEPRECATION")
-                    startActivityForResult(FolderPickerActivity.intent(this@ScannerActivity, FolderPickerActivity.MODE_REMOTE, getString(R.string.target_folder)), REQ_TARGET)
+                    startActivityForResult(FolderPickerActivity.intent(this@ScannerActivity, getString(R.string.target_folder)), REQ_TARGET)
                 }
             })
             progress = ProgressBar(context, null, android.R.attr.progressBarStyleHorizontal).apply {

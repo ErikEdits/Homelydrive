@@ -4,10 +4,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
-import android.os.Environment
-import android.os.storage.StorageManager
 import android.view.Gravity
 import android.view.View
 import android.widget.EditText
@@ -16,11 +13,10 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.ScrollView
 import android.widget.TextView
-import java.io.File
 
 /**
- * Picks a folder: either any folder on the phone (MODE_LOCAL) or a folder on
- * the server (MODE_REMOTE, with "new folder").
+ * Picks a folder on the server (with "new folder"). Phone folders are chosen
+ * in [ExplorerActivity].
  */
 class FolderPickerActivity : Activity() {
     private lateinit var titleView: TextView
@@ -30,19 +26,12 @@ class FolderPickerActivity : Activity() {
     private lateinit var choose: View
     private lateinit var newFolder: View
 
-    private var remote = false
-
-    // local mode
-    private var localDir: File? = null
-
-    // remote mode
     private var roots: List<Root> = emptyList()
     private var space: Root? = null
     private var remotePath = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        remote = intent.getStringExtra(EXTRA_MODE) == MODE_REMOTE
 
         val root = vertical(this) {
             setBackgroundColor(col(R.color.bg))
@@ -80,7 +69,7 @@ class FolderPickerActivity : Activity() {
         applyInsets(root)
         setContentView(root)
 
-        if (remote) loadRoots() else showLocalRoots()
+        loadRoots()
     }
 
     @Deprecated("Deprecated in Java")
@@ -93,56 +82,16 @@ class FolderPickerActivity : Activity() {
 
     /** Goes one level up; returns false at the top. */
     private fun goUp(fromBackKey: Boolean = false): Boolean {
-        if (remote) {
-            when {
-                space == null -> if (!fromBackKey) finish() else return false
-                remotePath.isEmpty() -> {
-                    space = null
-                    showRoots()
-                }
-                else -> openRemote(remotePath.substringBeforeLast('/', ""))
+        when {
+            space == null -> if (!fromBackKey) finish() else return false
+            remotePath.isEmpty() -> {
+                space = null
+                showRoots()
             }
-        } else {
-            val d = localDir
-            when {
-                d == null -> if (!fromBackKey) finish() else return false
-                storageRoots(this).any { it.second == d } -> showLocalRoots()
-                else -> openLocal(d.parentFile ?: return false)
-            }
+            else -> openRemote(remotePath.substringBeforeLast('/', ""))
         }
         return true
     }
-
-    // ----- phone folders -----
-
-    private fun showLocalRoots() {
-        localDir = null
-        pathText.text = getString(R.string.pick_local_hint)
-        choose.isEnabled = false
-        choose.alpha = 0.5f
-        newFolder.visibility = View.GONE
-        list.removeAllViews()
-        for ((label, dir) in storageRoots(this)) {
-            list.addView(row(this, R.drawable.ic_storage, label, dir.absolutePath) { openLocal(dir) })
-        }
-    }
-
-    private fun openLocal(dir: File) {
-        localDir = dir
-        pathText.text = displayLocal(this, dir.absolutePath)
-        choose.isEnabled = true
-        choose.alpha = 1f
-        newFolder.visibility = View.GONE
-        list.removeAllViews()
-        val dirs = dir.listFiles { f -> f.isDirectory && !f.name.startsWith(".") }?.sortedBy { it.name.lowercase() } ?: emptyList()
-        if (dirs.isEmpty()) list.addView(empty(getString(R.string.no_subfolders)))
-        for (d in dirs) {
-            val n = d.listFiles()?.size ?: 0
-            list.addView(row(this, R.drawable.ic_folder, d.name, resources.getQuantityString(R.plurals.entries, n, n)) { openLocal(d) })
-        }
-    }
-
-    // ----- server folders -----
 
     private fun loadRoots() {
         busy(true)
@@ -239,65 +188,23 @@ class FolderPickerActivity : Activity() {
     }
 
     private fun finishWithResult() {
+        val s = space ?: return
         val data = Intent()
-        if (remote) {
-            val s = space ?: return
-            data.putExtra(EXTRA_SPACE, s.ref)
-            data.putExtra(EXTRA_PATH, remotePath)
-            data.putExtra(EXTRA_LABEL, Uploader.joinPath(s.name, remotePath))
-        } else {
-            val d = localDir ?: return
-            data.putExtra(EXTRA_PATH, d.absolutePath)
-            data.putExtra(EXTRA_LABEL, displayLocal(this, d.absolutePath))
-        }
+        data.putExtra(EXTRA_SPACE, s.ref)
+        data.putExtra(EXTRA_PATH, remotePath)
+        data.putExtra(EXTRA_LABEL, Uploader.joinPath(s.name, remotePath))
         data.putExtras(intent.extras ?: Bundle())
         setResult(RESULT_OK, data)
         finish()
     }
 
     companion object {
-        const val EXTRA_MODE = "mode"
         const val EXTRA_TITLE = "title"
         const val EXTRA_PATH = "path"
         const val EXTRA_SPACE = "space"
         const val EXTRA_LABEL = "label"
-        const val MODE_LOCAL = "local"
-        const val MODE_REMOTE = "remote"
 
-        fun intent(ctx: Context, mode: String, title: String) =
-            Intent(ctx, FolderPickerActivity::class.java).putExtra(EXTRA_MODE, mode).putExtra(EXTRA_TITLE, title)
-
-        /** Internal storage and SD cards / USB drives. */
-        fun storageRoots(ctx: Context): List<Pair<String, File>> {
-            val out = ArrayList<Pair<String, File>>()
-            @Suppress("DEPRECATION")
-            out += ctx.getString(R.string.internal_storage) to Environment.getExternalStorageDirectory()
-            if (Build.VERSION.SDK_INT >= 30) {
-                val sm = ctx.getSystemService(StorageManager::class.java)
-                for (v in sm.storageVolumes) {
-                    val dir = v.directory ?: continue
-                    if (v.isPrimary || out.any { it.second == dir }) continue
-                    out += v.getDescription(ctx) to dir
-                }
-            } else {
-                // Older Android: derive the SD card roots from the app's own folders on them.
-                for (f in ctx.getExternalFilesDirs(null).drop(1)) {
-                    val p = f?.absolutePath ?: continue
-                    val i = p.indexOf("/Android/data/")
-                    if (i > 0) out += ctx.getString(R.string.sd_card) to File(p.substring(0, i))
-                }
-            }
-            return out
-        }
-
-        /** "/storage/emulated/0/DCIM/Camera" -> "Interner Speicher/DCIM/Camera". */
-        fun displayLocal(ctx: Context, path: String): String {
-            for ((label, dir) in storageRoots(ctx)) {
-                val p = dir.absolutePath
-                if (path == p) return label
-                if (path.startsWith("$p/")) return label + path.substring(p.length)
-            }
-            return path
-        }
+        fun intent(ctx: Context, title: String) =
+            Intent(ctx, FolderPickerActivity::class.java).putExtra(EXTRA_TITLE, title)
     }
 }

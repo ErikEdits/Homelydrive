@@ -94,8 +94,6 @@
 
     <!-- folder picker -->
     <string name="pick_folder">Choose folder</string>
-    <string name="pick_phone_folder">Choose a phone folder</string>
-    <string name="pick_local_hint">Choose a storage, then the folder to upload.</string>
     <string name="pick_remote_hint">Choose where the files go.</string>
     <string name="choose_this_folder">Choose this folder</string>
     <string name="new_folder">New folder</string>
@@ -193,8 +191,41 @@
         <item quantity="one">%d file is being uploaded</item>
         <item quantity="other">%d files are being uploaded</item>
     </plurals>
-    <plurals name="entries">
-        <item quantity="one">%d item</item>
-        <item quantity="other">%d items</item>
+
+    <!-- explorer -->
+    <string name="explorer_start">Phone</string>
+    <string name="explorer_title_upload">Upload from phone</string>
+    <string name="explorer_title_folders">Choose folders for automatic upload</string>
+    <string name="explorer_hint">Tap opens a folder. Long-press to select – then tap more files and folders to add them.</string>
+    <string name="explorer_hint_folders">Tap opens a folder. Long-press folders to select several.</string>
+    <string name="system_picker">Other app</string>
+    <string name="sort">Sort</string>
+    <string name="sort_name">Sorted by name</string>
+    <string name="sort_date">Newest first</string>
+    <string name="empty_folder">This folder is empty</string>
+    <string name="select_all">Select all</string>
+    <string name="clear_selection">Clear selection</string>
+    <string name="open">Open</string>
+    <string name="upload_to">To: %1$s</string>
+    <string name="upload_n">Upload (%1$d)</string>
+    <string name="add_folders_n">Upload these folders automatically (%1$d)</string>
+    <string name="only_folders">Only folders can be chosen here</string>
+    <string name="upload_files_from_phone">Upload files from phone</string>
+    <string name="quick_camera">Camera</string>
+    <string name="quick_screenshots">Screenshots</string>
+    <string name="quick_pictures">Pictures</string>
+    <string name="quick_downloads">Downloads</string>
+    <string name="quick_documents">Documents</string>
+    <string name="quick_whatsapp">WhatsApp media</string>
+    <string name="quick_telegram">Telegram</string>
+    <string name="quick_music">Music</string>
+    <string name="quick_movies">Videos</string>
+    <plurals name="n_selected">
+        <item quantity="one">%d selected</item>
+        <item quantity="other">%d selected</item>
+    </plurals>
+    <plurals name="folders_added">
+        <item quantity="one">%d folder added</item>
+        <item quantity="other">%d folders added</item>
     </plurals>
 </resources>

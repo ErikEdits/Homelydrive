@@ -92,8 +92,6 @@
 
     <!-- Ordnerauswahl -->
     <string name="pick_folder">Ordner wählen</string>
-    <string name="pick_phone_folder">Handy-Ordner wählen</string>
-    <string name="pick_local_hint">Wähle einen Speicher und dann den Ordner, der hochgeladen werden soll.</string>
     <string name="pick_remote_hint">Wähle, wohin die Dateien kommen.</string>
     <string name="choose_this_folder">Diesen Ordner wählen</string>
     <string name="new_folder">Neuer Ordner</string>
@@ -191,8 +189,41 @@
         <item quantity="one">%d Datei wird hochgeladen</item>
         <item quantity="other">%d Dateien werden hochgeladen</item>
     </plurals>
-    <plurals name="entries">
-        <item quantity="one">%d Eintrag</item>
-        <item quantity="other">%d Einträge</item>
+
+    <!-- explorer -->
+    <string name="explorer_start">Handy</string>
+    <string name="explorer_title_upload">Vom Handy hochladen</string>
+    <string name="explorer_title_folders">Ordner für automatischen Upload wählen</string>
+    <string name="explorer_hint">Tippen öffnet einen Ordner. Lange drücken wählt aus – danach weitere Dateien und Ordner antippen.</string>
+    <string name="explorer_hint_folders">Tippen öffnet einen Ordner. Ordner lange drücken, um mehrere auszuwählen.</string>
+    <string name="system_picker">Andere App</string>
+    <string name="sort">Sortieren</string>
+    <string name="sort_name">Nach Name sortiert</string>
+    <string name="sort_date">Neueste zuerst</string>
+    <string name="empty_folder">Dieser Ordner ist leer</string>
+    <string name="select_all">Alle auswählen</string>
+    <string name="clear_selection">Auswahl aufheben</string>
+    <string name="open">Öffnen</string>
+    <string name="upload_to">Nach: %1$s</string>
+    <string name="upload_n">Hochladen (%1$d)</string>
+    <string name="add_folders_n">Diese Ordner automatisch hochladen (%1$d)</string>
+    <string name="only_folders">Hier können nur Ordner gewählt werden</string>
+    <string name="upload_files_from_phone">Dateien vom Handy hochladen</string>
+    <string name="quick_camera">Kamera</string>
+    <string name="quick_screenshots">Screenshots</string>
+    <string name="quick_pictures">Bilder</string>
+    <string name="quick_downloads">Downloads</string>
+    <string name="quick_documents">Dokumente</string>
+    <string name="quick_whatsapp">WhatsApp-Medien</string>
+    <string name="quick_telegram">Telegram</string>
+    <string name="quick_music">Musik</string>
+    <string name="quick_movies">Videos</string>
+    <plurals name="n_selected">
+        <item quantity="one">%d ausgewählt</item>
+        <item quantity="other">%d ausgewählt</item>
+    </plurals>
+    <plurals name="folders_added">
+        <item quantity="one">%d Ordner hinzugefügt</item>
+        <item quantity="other">%d Ordner hinzugefügt</item>
     </plurals>
 </resources>
