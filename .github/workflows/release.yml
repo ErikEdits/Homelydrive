@@ -131,6 +131,24 @@ jobs:
           & $iscc "/DAppVersion=$v" packaging\windows\client.iss
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           Compress-Archive -Path dist\windows-amd64\homelydrive.exe, dist\windows-amd64\homelydrive-server.exe -DestinationPath "dist\homelydrive-$v-windows-amd64-portable.zip"
+      - name: Test the server installer
+        shell: pwsh
+        run: |
+          $v = $env:VERSION -replace '^v', ''
+          $setup = Start-Process "dist\Homelydrive-Server-Setup-$v.exe" -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/LOG=server-install.log' -Wait -PassThru
+          Get-Content server-install.log -Tail 30
+          if ($setup.ExitCode -ne 0) { throw "setup failed with exit code $($setup.ExitCode)" }
+          Get-Service homelydrive | Format-List Name, Status, StartType
+          $ok = $false
+          for ($i = 0; $i -lt 30 -and -not $ok; $i++) {
+            try { Invoke-RestMethod http://127.0.0.1:8420/api/v1/ping | Format-List; $ok = $true } catch { Start-Sleep 1 }
+          }
+          Get-ChildItem "$env:ProgramData\Homelydrive\logs" -ErrorAction SilentlyContinue | Get-Content -Tail 30
+          if (-not $ok) { throw "the installed server does not answer on 127.0.0.1:8420" }
+          $un = Start-Process "$env:ProgramFiles\Homelydrive Server\unins000.exe" -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES' -Wait -PassThru
+          Start-Sleep 3
+          if (Get-Service homelydrive -ErrorAction SilentlyContinue) { throw "service still there after uninstall" }
+          "install, start and uninstall OK"
       - uses: actions/upload-artifact@v4
         with:
           name: windows
