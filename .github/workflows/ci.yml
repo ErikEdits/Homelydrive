@@ -1,5 +1,5 @@
 # Checks every push and pull request: web interface, Go tests, builds for
-# Linux and Windows, and the Android app.
+# Linux and Windows, the server tests on Windows, and the Android app.
 name: CI
 
 on:
@@ -40,6 +40,19 @@ jobs:
         run: SKIP_WEB=1 scripts/build.sh
       - name: Build Windows
         run: GOOS=windows GOARCH=amd64 SKIP_WEB=1 scripts/build.sh
+
+  windows:
+    name: Server unter Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: go vet
+        run: go vet ./internal/server/...
+      - name: go test
+        run: go test ./internal/server/...
 
   android:
     name: Android-App
