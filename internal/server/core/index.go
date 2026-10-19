@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -391,23 +392,37 @@ func hashFile(ctx context.Context, path string) (string, error) {
 
 // ----- File watching -----
 
+// watchBackend reports changes made directly on the disks.
+type watchBackend interface {
+	Add(dir string) error
+	Remove(dir string) error
+	Close() error
+	eventCh() <-chan fsnotify.Event
+	errorCh() <-chan error
+	// recursive reports whether a watch also covers all folders below it.
+	// Then only the space roots are watched.
+	recursive() bool
+}
+
 type watchTarget struct {
 	spaceID int64
 	rel     string
 }
 
 type watcher struct {
-	mu      sync.Mutex
-	fw      *fsnotify.Watcher
-	dirs    map[string]watchTarget
-	pending map[watchTarget]bool
-	deep    map[watchTarget]bool
-	timer   *time.Timer
-	full    bool
+	mu         sync.Mutex
+	fw         watchBackend
+	dirs       map[string]watchTarget
+	pending    map[watchTarget]bool
+	deep       map[watchTarget]bool
+	timer      *time.Timer
+	full       bool
+	rescanning atomic.Bool
 }
 
-func (c *Core) watchLoop(ctx context.Context) {
-	fw, err := fsnotify.NewWatcher()
+// startWatching sets up file watching before the first scan registers folders.
+func (c *Core) startWatching(ctx context.Context) {
+	fw, err := newWatchBackend()
 	if err != nil {
 		c.Log.Warn("file watching unavailable, relying on periodic scans", "err", err)
 		return
@@ -416,21 +431,41 @@ func (c *Core) watchLoop(ctx context.Context) {
 	c.spacesMu.Lock()
 	c.watch = w
 	c.spacesMu.Unlock()
-	defer fw.Close()
+	go c.watchLoop(ctx, w)
+}
+
+func (c *Core) watchLoop(ctx context.Context, w *watcher) {
+	defer func() {
+		c.spacesMu.Lock()
+		c.watch = nil
+		c.spacesMu.Unlock()
+		w.fw.Close()
+	}()
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case ev, ok := <-fw.Events:
+		case ev, ok := <-w.fw.eventCh():
 			if !ok {
 				return
 			}
 			c.onFSEvent(w, ev)
-		case err, ok := <-fw.Errors:
+		case err, ok := <-w.fw.errorCh():
 			if !ok {
 				return
 			}
-			c.Log.Debug("watch error", "err", err)
+			if !errors.Is(err, fsnotify.ErrEventOverflow) {
+				c.Log.Debug("watch error", "err", err)
+				continue
+			}
+			// Too many changes at once, some were lost.
+			if w.rescanning.CompareAndSwap(false, true) {
+				c.Log.Info("many files changed on disk at once, rescanning")
+				go func() {
+					defer w.rescanning.Store(false)
+					c.ScanAll()
+				}()
+			}
 		}
 	}
 }
@@ -444,7 +479,7 @@ func (c *Core) getWatcher() *watcher {
 // watchDir registers the physical folders of rel (on every disk) for watching.
 func (c *Core) watchDir(s *Space, rel string) {
 	w := c.getWatcher()
-	if w == nil {
+	if w == nil || (rel != "" && w.fw.recursive()) {
 		return
 	}
 	w.mu.Lock()
@@ -467,6 +502,92 @@ func (c *Core) watchDir(s *Space, rel string) {
 		}
 		w.dirs[abs] = watchTarget{spaceID: s.ID, rel: rel}
 	}
+}
+
+// watchTree watches rel and all indexed folders below it, after the server
+// moved it there.
+func (c *Core) watchTree(s *Space, rel string) {
+	w := c.getWatcher()
+	if w == nil || w.fw.recursive() {
+		return
+	}
+	dirs := []string{rel}
+	rows, err := c.DB.Query(`SELECT path FROM files WHERE space_id = ? AND is_dir = 1 AND path >= ? AND path < ?`, s.ID, rel+"/", rel+"0")
+	if err == nil {
+		for rows.Next() {
+			var p string
+			if rows.Scan(&p) == nil {
+				dirs = append(dirs, p)
+			}
+		}
+		rows.Close()
+	}
+	for _, p := range dirs {
+		c.watchDir(s, p)
+	}
+}
+
+// unwatchTree drops the watches of rel and everything below it before the
+// server moves or deletes it. A watch would otherwise follow the folder to
+// its new place under the old name.
+func (c *Core) unwatchTree(s *Space, rel string) {
+	w := c.getWatcher()
+	if w == nil {
+		return
+	}
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	for i := range s.Union.Roots {
+		w.dropTree(s.Union.Abs(i, rel))
+	}
+}
+
+// dropTree removes the watches of the folder abs and all folders below it.
+// Call with w.mu held.
+func (w *watcher) dropTree(abs string) {
+	prefix := withSeparator(abs)
+	for d := range w.dirs {
+		if d == abs || strings.HasPrefix(d, prefix) {
+			w.fw.Remove(d)
+			delete(w.dirs, d)
+		}
+	}
+}
+
+// targetOf finds the space folder of the physical folder dir. With a
+// recursive backend that is a folder below a watched root.
+// Call with w.mu held.
+func (w *watcher) targetOf(dir string) (watchTarget, bool) {
+	if t, ok := w.dirs[dir]; ok {
+		return t, true
+	}
+	if !w.fw.recursive() {
+		return watchTarget{}, false
+	}
+	root := ""
+	for d := range w.dirs {
+		if len(d) > len(root) && strings.HasPrefix(dir, withSeparator(d)) {
+			root = d
+		}
+	}
+	if root == "" {
+		return watchTarget{}, false
+	}
+	sub := filepath.ToSlash(strings.TrimPrefix(dir, withSeparator(root)))
+	for _, part := range strings.Split(sub, "/") {
+		if strings.HasPrefix(part, fsname.InternalPrefix) {
+			return watchTarget{}, false
+		}
+	}
+	t := w.dirs[root]
+	return watchTarget{spaceID: t.spaceID, rel: fsname.Join(t.rel, sub)}, true
+}
+
+func withSeparator(dir string) string {
+	if strings.HasSuffix(dir, string(filepath.Separator)) {
+		return dir
+	}
+	return dir + string(filepath.Separator)
 }
 
 func (c *Core) watchSpace(s *Space) { go c.scanSpace(s) }
@@ -493,12 +614,10 @@ func (c *Core) onFSEvent(w *watcher, ev fsnotify.Event) {
 	}
 	w.mu.Lock()
 	defer w.mu.Unlock()
-	if t, ok := w.dirs[ev.Name]; ok && ev.Has(fsnotify.Remove|fsnotify.Rename) {
-		delete(w.dirs, ev.Name)
-		w.fw.Remove(ev.Name)
-		_ = t
+	if _, ok := w.dirs[ev.Name]; ok && ev.Has(fsnotify.Remove|fsnotify.Rename) {
+		w.dropTree(ev.Name) // its subfolders are gone with it
 	}
-	parent, ok := w.dirs[filepath.Dir(ev.Name)]
+	parent, ok := w.targetOf(filepath.Dir(ev.Name))
 	if !ok {
 		return
 	}

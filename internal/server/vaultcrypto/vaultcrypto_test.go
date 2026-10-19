@@ -57,7 +57,9 @@ func TestTamperAndWrongKey(t *testing.T) {
 	w.Close()
 	f.Close()
 	if r, err := OpenFile(p, NewDataKey()); err == nil {
-		if _, err := io.ReadAll(r); err == nil {
+		_, err := io.ReadAll(r)
+		r.Close()
+		if err == nil {
 			t.Fatal("wrong key accepted")
 		}
 	}
@@ -66,7 +68,9 @@ func TestTamperAndWrongKey(t *testing.T) {
 	os.WriteFile(p, raw[:len(raw)-(chunkSize+tagSize)], 0o600)
 	r, err := OpenFile(p, key)
 	if err == nil {
-		if _, err := io.ReadAll(r); err == nil {
+		_, err := io.ReadAll(r)
+		r.Close()
+		if err == nil {
 			t.Fatal("truncation not detected")
 		}
 	}

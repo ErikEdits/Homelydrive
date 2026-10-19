@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/erikedits/homelydrive/internal/server/fsname"
+	"github.com/erikedits/homelydrive/internal/server/storage"
 	"github.com/erikedits/homelydrive/internal/server/thumbs"
 )
 
@@ -292,7 +293,7 @@ func (c *Core) EditImage(a *Access, rel string, rotate int, crop *thumbs.Crop, a
 	}
 	dst := a.Space.Union.Abs(idx, target)
 	os.MkdirAll(filepath.Dir(dst), 0o755)
-	if err := os.Rename(tmp, dst); err != nil {
+	if err := storage.MoveFile(tmp, dst); err != nil {
 		os.Remove(tmp)
 		return FileInfo{}, err
 	}

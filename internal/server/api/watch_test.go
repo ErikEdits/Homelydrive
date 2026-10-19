@@ -20,7 +20,6 @@ func TestWatchedFolderTree(t *testing.T) {
 		e.upload(anna, "home", p, []byte(p))
 	}
 	e.do(anna, "POST", "/api/v1/files/mkdir", map[string]string{"path": "Archiv"}, nil, 200)
-	time.Sleep(time.Second)
 	e.core.ScanAll() // watches every folder
 
 	e.do(anna, "POST", "/api/v1/files/rename", map[string]string{"path": "Handy", "new_name": "Samsung SM-A556B"}, nil, 200)

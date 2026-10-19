@@ -467,7 +467,7 @@ func (c *Core) finishUploadLocked(r *uploadRow, a *Access, sum string, o uploadO
 		drop()
 		return nil, err
 	}
-	if err := os.Rename(tmp, dst); err != nil {
+	if err := storage.MoveFile(tmp, dst); err != nil {
 		drop()
 		return nil, err
 	}

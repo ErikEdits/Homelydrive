@@ -231,7 +231,7 @@ func (u *Union) Rename(oldRel, newRel string) error {
 		if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
 			return err
 		}
-		if err := os.Rename(src, dst); err != nil {
+		if err := retry(func() error { return os.Rename(src, dst) }); err != nil {
 			return err
 		}
 		moved = true
@@ -240,6 +240,24 @@ func (u *Union) Rename(oldRel, newRel string) error {
 		return fs.ErrNotExist
 	}
 	return nil
+}
+
+// retry runs op again for up to two seconds while Windows reports a file as
+// busy, so that a virus scanner looking at a new file does not make moving
+// or deleting it fail.
+func retry(op func() error) error {
+	err := op()
+	for i := 0; i < 10 && err != nil && busy(err); i++ {
+		time.Sleep(200 * time.Millisecond)
+		err = op()
+	}
+	return err
+}
+
+// MoveFile renames a physical file like os.Rename. A virus scanner often
+// looks at a freshly written file right away, so it waits for that on Windows.
+func MoveFile(src, dst string) error {
+	return retry(func() error { return os.Rename(src, dst) })
 }
 
 // MoveToTrash moves rel into the trash folder of every root holding a part
@@ -254,7 +272,7 @@ func (u *Union) MoveToTrash(rel, trashID string) error {
 		if err := os.MkdirAll(r.TrashDir, 0o755); err != nil {
 			return err
 		}
-		if err := os.Rename(src, filepath.Join(r.TrashDir, trashID)); err != nil {
+		if err := retry(func() error { return os.Rename(src, filepath.Join(r.TrashDir, trashID)) }); err != nil {
 			return err
 		}
 		moved = true
@@ -282,7 +300,7 @@ func (u *Union) RestoreFromTrash(trashID, rel string) error {
 			if err := mergeInto(src, dst); err != nil {
 				return err
 			}
-		} else if err := os.Rename(src, dst); err != nil {
+		} else if err := retry(func() error { return os.Rename(src, dst) }); err != nil {
 			return err
 		}
 		restored = true
@@ -337,7 +355,7 @@ func (u *Union) PurgeTrash(trashID string) error {
 	for _, r := range u.Roots {
 		p := filepath.Join(r.TrashDir, trashID)
 		if _, err := os.Lstat(p); err == nil {
-			if err := os.RemoveAll(p); err != nil {
+			if err := retry(func() error { return os.RemoveAll(p) }); err != nil {
 				return err
 			}
 		}
@@ -365,7 +383,7 @@ func (u *Union) RemoveAll(rel string) error {
 	for i := range u.Roots {
 		p := u.abs(i, rel)
 		if _, err := os.Lstat(p); err == nil {
-			if err := os.RemoveAll(p); err != nil {
+			if err := retry(func() error { return os.RemoveAll(p) }); err != nil {
 				return err
 			}
 		}
@@ -427,7 +445,7 @@ func CopyFile(srcPath, dstPath string) error {
 		return err
 	}
 	os.Chtimes(tmp, fi.ModTime(), fi.ModTime())
-	return os.Rename(tmp, dstPath)
+	return MoveFile(tmp, dstPath)
 }
 
 // DirSize sums up file sizes below a physical path.

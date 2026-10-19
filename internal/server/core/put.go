@@ -69,7 +69,7 @@ func (c *Core) PutTemp(a *Access, rel, tmp string, rootIdx int) error {
 		os.Remove(tmp)
 		return err
 	}
-	if err := os.Rename(tmp, dst); err != nil {
+	if err := storage.MoveFile(tmp, dst); err != nil {
 		os.Remove(tmp)
 		return err
 	}

@@ -448,6 +448,12 @@ func (c *Core) RenameSharedSpace(id int64, name string) error {
 		return badRequest("Ungültiger Name.")
 	}
 	if s.Kind == KindTeam {
+		c.unwatchTree(s, "")
+		defer func() {
+			if ns, err := c.GetSpace(id); err == nil {
+				c.watchSpace(ns)
+			}
+		}()
 		for _, loc := range c.Cfg.Get().StorageLocations {
 			old := filepath.Join(loc, "teams", s.Name)
 			if _, err := os.Stat(old); err == nil {
@@ -474,6 +480,7 @@ func (c *Core) DeleteSharedSpace(id int64, deleteFiles bool) error {
 	if s.Kind == KindHome {
 		return ErrForbidden
 	}
+	c.unwatchTree(s, "")
 	if deleteFiles && s.Kind == KindTeam {
 		for _, r := range s.Union.Roots {
 			removeAllQuiet(r.Dir)

@@ -93,7 +93,7 @@ func New(db *sql.DB, cfg *config.Store, dataDir string, log *slog.Logger) (*Core
 // upload cleanup, disk space warnings and the update check.
 func (c *Core) Start(ctx context.Context) {
 	go c.indexWorker(ctx)
-	go c.watchLoop(ctx)
+	c.startWatching(ctx)
 	go c.scanLoop(ctx)
 	go c.maintenanceLoop(ctx)
 }

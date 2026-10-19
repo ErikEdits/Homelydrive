@@ -331,10 +331,13 @@ func (c *Core) Rename(a *Access, rel, newName string) (string, error) {
 	if !strings.EqualFold(oldName, newName) && a.Space.Union.Exists(newFull) {
 		return "", ErrExists
 	}
+	c.unwatchTree(a.Space, full)
 	if err := a.Space.Union.Rename(full, newFull); err != nil {
+		c.watchTree(a.Space, full)
 		return "", mapFSErr(err)
 	}
 	c.movePaths(a.Space.ID, full, newFull)
+	c.watchTree(a.Space, newFull)
 	c.logActivity(a.User, "", a.Space.ID, "rename", newFull, oldName)
 	c.publishChange(a.Space.ID, parent)
 	return a.Rel(newFull), nil
@@ -433,10 +436,19 @@ func (c *Core) Transfer(src *Access, rels []string, dst *Access, dstRel string, 
 				src.Space.ID, full+"/", full+"0").Scan(&size)
 		}
 		if move && sameSpace {
+			if row.IsDir {
+				c.unwatchTree(src.Space, full)
+			}
 			if err := src.Space.Union.Rename(full, target); err != nil {
+				if row.IsDir {
+					c.watchTree(src.Space, full)
+				}
 				return out, mapFSErr(err)
 			}
 			c.movePaths(src.Space.ID, full, target)
+			if row.IsDir {
+				c.watchTree(src.Space, target)
+			}
 		} else {
 			if !(move && c.sameOwner(src.Space, dst.Space)) {
 				if err := c.checkQuota(dst.Space, size); err != nil {
@@ -448,8 +460,11 @@ func (c *Core) Transfer(src *Access, rels []string, dst *Access, dstRel string, 
 			}
 			c.scanSubtree(dst.Space, target)
 			if move {
+				if row.IsDir {
+					c.unwatchTree(src.Space, full)
+				}
 				if err := src.Space.Union.RemoveAll(full); err != nil {
-					return out, err
+					return out, mapFSErr(err)
 				}
 				deleteSubtree(c.DB, src.Space.ID, full)
 				c.cleanupDanglingRefs(src.Space.ID)
@@ -573,7 +588,7 @@ func (c *Core) WriteContent(a *Access, rel string, r io.Reader, size int64) (Fil
 		os.Remove(tmp)
 		return FileInfo{}, err
 	}
-	if err := os.Rename(tmp, dstPath); err != nil {
+	if err := storage.MoveFile(tmp, dstPath); err != nil {
 		os.Remove(tmp)
 		return FileInfo{}, err
 	}

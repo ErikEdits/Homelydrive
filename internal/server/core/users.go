@@ -212,6 +212,9 @@ func (c *Core) DeleteUser(id int64, deleteFiles bool) error {
 		}
 	}
 	home, err := c.HomeSpace(id)
+	if err == nil {
+		c.unwatchTree(home, "")
+	}
 	if err == nil && deleteFiles {
 		for _, r := range home.Union.Roots {
 			removeAllQuiet(r.Dir)

@@ -44,8 +44,14 @@ func (c *Core) trashPath(s *Space, full string, by *User) error {
 		return err
 	}
 	id, _ := res.LastInsertId()
+	if r.IsDir {
+		c.unwatchTree(s, full)
+	}
 	if err := s.Union.MoveToTrash(full, trashName(id)); err != nil {
 		c.DB.Exec(`DELETE FROM trash WHERE id = ?`, id)
+		if r.IsDir {
+			c.watchTree(s, full)
+		}
 		return mapFSErr(err)
 	}
 	deleteSubtree(c.DB, s.ID, full)
