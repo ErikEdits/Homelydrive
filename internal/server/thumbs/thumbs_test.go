@@ -1,6 +1,7 @@
 package thumbs
 
 import (
+	"bytes"
 	"context"
 	"image"
 	"image/color"
@@ -47,5 +48,44 @@ func TestGenerateAndEdit(t *testing.T) {
 	r, _, _, _ := res.At(10, 10).RGBA()
 	if r < 0xf000 {
 		t.Fatal("crop kept the wrong half")
+	}
+}
+
+func TestAvatar(t *testing.T) {
+	dir := t.TempDir()
+	// A wide picture with a red middle: the avatar is its middle square.
+	img := image.NewRGBA(image.Rect(0, 0, 900, 300))
+	for x := 0; x < 900; x++ {
+		for y := 0; y < 300; y++ {
+			c := color.RGBA{0, 0, 255, 255}
+			if x >= 300 && x < 600 {
+				c = color.RGBA{255, 0, 0, 255}
+			}
+			img.Set(x, y, c)
+		}
+	}
+	src := filepath.Join(dir, "a.png")
+	f, _ := os.Create(src)
+	png.Encode(f, img)
+	f.Close()
+	var buf bytes.Buffer
+	if err := Avatar(context.Background(), src, &buf, 128); err != nil {
+		t.Fatal(err)
+	}
+	out, err := jpeg.Decode(&buf)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if b := out.Bounds(); b.Dx() != 128 || b.Dy() != 128 {
+		t.Fatalf("avatar size %v", b)
+	}
+	for _, p := range []image.Point{{2, 2}, {64, 64}, {125, 125}} {
+		if r, _, b, _ := out.At(p.X, p.Y).RGBA(); r < 0xc000 || b > 0x4000 {
+			t.Fatalf("pixel %v is not red: %v", p, out.At(p.X, p.Y))
+		}
+	}
+	os.WriteFile(src, []byte("kein Bild"), 0o644)
+	if err := Avatar(context.Background(), src, &buf, 128); err != ErrUnsupported {
+		t.Fatalf("garbage: %v", err)
 	}
 }

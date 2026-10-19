@@ -239,7 +239,8 @@ class MainActivity : Activity() {
                 chooserParams = params
                 // Uploads into a drive folder go through the app's own explorer (files and whole
                 // folders, several at once); Android's picker stays available from there.
-                val t = webUploadTarget(view.url)
+                // A single pick (the profile picture) goes back to the page itself.
+                val t = if (params.mode == FileChooserParams.MODE_OPEN_MULTIPLE) webUploadTarget(view.url) else null
                 if (t != null) {
                     @Suppress("DEPRECATION")
                     startActivityForResult(ExplorerActivity.intent(this@MainActivity, ExplorerActivity.MODE_UPLOAD)

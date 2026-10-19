@@ -53,10 +53,13 @@ func (s *Server) Handler() http.Handler {
 	// --- account ---
 	mux.HandleFunc("GET /api/v1/me", s.auth(s.handleMe))
 	mux.HandleFunc("PUT /api/v1/me", s.auth(s.handleUpdateMe))
+	mux.HandleFunc("PUT /api/v1/me/avatar", s.auth(s.handleSetAvatar))
+	mux.HandleFunc("DELETE /api/v1/me/avatar", s.auth(s.handleDeleteAvatar))
 	mux.HandleFunc("GET /api/v1/me/devices", s.auth(s.handleDevices))
 	mux.HandleFunc("DELETE /api/v1/me/devices/{id}", s.auth(s.handleRevokeDevice))
 	mux.HandleFunc("GET /api/v1/info", s.auth(s.handleInfo))
 	mux.HandleFunc("GET /api/v1/users", s.auth(s.handleUserBriefs))
+	mux.HandleFunc("GET /api/v1/users/{id}/avatar", s.auth(s.handleAvatar))
 	mux.HandleFunc("GET /api/v1/roots", s.auth(s.handleRoots))
 
 	// --- files ---

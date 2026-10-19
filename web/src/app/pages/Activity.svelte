@@ -4,6 +4,7 @@
   import { errText, t } from '../../lib/i18n.svelte'
   import { dayLabel, parentOf } from '../../lib/format'
   import type { Activity } from '../../lib/types'
+  import Avatar from '../../lib/ui/Avatar.svelte'
   import { driveHash } from '../router.svelte'
 
   let items = $state<Activity[]>([])
@@ -52,7 +53,9 @@
     {#each g.items as a (a.id)}
       <div class="entry">
         <span class="time">{time(a.created_at)}</span>
-        <span class="actor">{a.actor || '—'}</span>
+        <span class="actor">
+          {#if a.actor}<Avatar id={a.actor_id} name={a.actor} version={a.actor_avatar} size={22} />{a.actor}{:else}—{/if}
+        </span>
         <span class="what">
           {t('activity.' + a.action)}
           {#if a.path}
@@ -97,7 +100,12 @@
     font-size: 12px;
   }
   .actor {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
     font-weight: 500;
+    align-self: center;
   }
   @media (max-width: 600px) {
     .entry {

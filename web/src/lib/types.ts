@@ -10,6 +10,7 @@ export interface Me {
   used: number
   lang: 'de' | 'en'
   has_vault: boolean
+  avatar: number
 }
 
 export interface FileInfo {
@@ -76,6 +77,7 @@ export interface Share {
   is_dir: boolean
   target_id: number
   target_name: string
+  target_avatar?: number
   owner_name?: string
   can_write: boolean
   created_at: number
@@ -107,6 +109,8 @@ export interface Notification {
 export interface Activity {
   id: number
   actor: string
+  actor_id?: number
+  actor_avatar?: number
   action: string
   space?: string
   path: string
@@ -152,6 +156,7 @@ export interface UserBrief {
   id: number
   username: string
   display_name: string
+  avatar?: number
 }
 
 export interface Device {

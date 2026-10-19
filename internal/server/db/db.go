@@ -294,4 +294,6 @@ CREATE TABLE settings (
 	value TEXT NOT NULL
 );
 `,
+	// 2: profile pictures (time of the last change, 0 = none)
+	`ALTER TABLE users ADD COLUMN avatar INTEGER NOT NULL DEFAULT 0;`,
 }

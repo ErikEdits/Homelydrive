@@ -86,6 +86,38 @@ func Generate(ctx context.Context, src, category, dst string, size int) error {
 	return os.Rename(tmp, dst)
 }
 
+// Avatar writes a square JPEG profile picture of size×size pixels, cut from
+// the middle of the image at src, to w.
+func Avatar(ctx context.Context, src string, w io.Writer, size int) error {
+	f, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	cfg, _, cfgErr := image.DecodeConfig(f)
+	f.Close()
+	var img image.Image
+	if cfgErr == nil && cfg.Width > 0 && cfg.Height > 0 {
+		// Scale down while decoding, but keep the shorter side >= size.
+		fitTo := 0
+		if short := min(cfg.Width, cfg.Height); short > size {
+			fitTo = max(cfg.Width, cfg.Height)*size/short + 1
+		}
+		img, err = decodeOriented(src, fitTo)
+	}
+	if img == nil && ffmpegPath != "" {
+		img, err = ffmpegFrame(ctx, src, 4*size, false) // HEIC and other formats
+	}
+	if img == nil || err != nil {
+		return ErrUnsupported
+	}
+	b := img.Bounds()
+	side := min(b.Dx(), b.Dy())
+	square := image.Rect(0, 0, side, side).Add(b.Min).Add(image.Pt((b.Dx()-side)/2, (b.Dy()-side)/2))
+	out := image.NewRGBA(image.Rect(0, 0, size, size))
+	xdraw.CatmullRom.Scale(out, out.Bounds(), img, square, xdraw.Over, nil)
+	return jpeg.Encode(w, flatten(out), &jpeg.Options{Quality: 88})
+}
+
 // decodeOriented decodes an image and applies its EXIF orientation. If fitTo
 // is > 0 the image is scaled down first, which makes rotation much cheaper.
 func decodeOriented(path string, fitTo int) (image.Image, error) {

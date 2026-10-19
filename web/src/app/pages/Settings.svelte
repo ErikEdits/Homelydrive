@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { User, KeyRound, MonitorSmartphone, FileType as FileTypeIcon, Globe, Info, Trash2, Plus, Pencil, Download } from '@lucide/svelte'
+  import { User, KeyRound, MonitorSmartphone, FileType as FileTypeIcon, Globe, Info, Trash2, Plus, Pencil, Download, ImagePlus } from '@lucide/svelte'
   import { del, get, put } from '../../lib/api'
   import { errText, i18n, setLang, t, type Lang } from '../../lib/i18n.svelte'
   import { dateTime, relative } from '../../lib/format'
+  import Avatar from '../../lib/ui/Avatar.svelte'
   import Modal from '../../lib/ui/Modal.svelte'
   import { confirmDialog, toast } from '../../lib/ui/ui.svelte'
   import type { Device, FileType, Me } from '../../lib/types'
@@ -17,6 +18,8 @@
   let types = $state<FileType[]>([])
   let typeFilter = $state('')
   let editType = $state<FileType | null>(null)
+  let picker = $state<HTMLInputElement>()
+  let avatarBusy = $state(false)
 
   async function loadDevices() {
     devices = await get<Device[]>('/me/devices')
@@ -34,6 +37,32 @@
       toast(t('settings.saved'), 'success')
     } catch (e) {
       toast(errText(e), 'error')
+    }
+  }
+
+  async function uploadAvatar() {
+    const file = picker?.files?.[0]
+    if (!file) return
+    avatarBusy = true
+    try {
+      app.me = await put<Me>('/me/avatar', file)
+      toast(t('settings.avatarSaved'), 'success')
+    } catch (e) {
+      toast(errText(e), 'error')
+    } finally {
+      avatarBusy = false
+      if (picker) picker.value = ''
+    }
+  }
+
+  async function removeAvatar() {
+    avatarBusy = true
+    try {
+      app.me = await del<Me>('/me/avatar')
+    } catch (e) {
+      toast(errText(e), 'error')
+    } finally {
+      avatarBusy = false
     }
   }
 
@@ -104,6 +133,24 @@
 
   <section class="card">
     <h2><User size={18} />{t('settings.profile')}</h2>
+    <div class="avatar-row">
+      <button class="avatar-pick" onclick={() => picker?.click()} disabled={avatarBusy} aria-label={t('settings.avatarUpload')}>
+        <Avatar id={app.me?.id} name={app.me?.name || ''} version={app.me?.avatar} size={80} />
+      </button>
+      <div class="avatar-actions">
+        <span class="label">{t('settings.avatar')}</span>
+        <div class="row">
+          <button class="btn" onclick={() => picker?.click()} disabled={avatarBusy}>
+            <ImagePlus size={16} />{app.me?.avatar ? t('settings.avatarChange') : t('settings.avatarUpload')}
+          </button>
+          {#if app.me?.avatar}
+            <button class="btn ghost" onclick={removeAvatar} disabled={avatarBusy}><Trash2 size={16} />{t('settings.avatarRemove')}</button>
+          {/if}
+        </div>
+        <span class="muted small">{t('settings.avatarHint')}</span>
+      </div>
+      <input bind:this={picker} type="file" accept="image/*" hidden onchange={uploadAvatar} />
+    </div>
     <label class="field">{t('settings.displayName')}
       <div class="row"><input class="input" bind:value={displayName} placeholder={app.me?.username} /><button class="btn" onclick={saveProfile}>{t('common.save')}</button></div>
     </label>
@@ -232,6 +279,36 @@
     align-items: center;
     gap: 8px;
     font-size: 16px;
+  }
+  .avatar-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 14px;
+  }
+  .avatar-pick {
+    display: flex;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: none;
+    cursor: pointer;
+  }
+  .avatar-pick:hover {
+    filter: brightness(0.92);
+  }
+  .avatar-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+  .avatar-actions .label {
+    font-size: 13px;
+    color: var(--text-2);
+  }
+  .avatar-actions .row {
+    flex-wrap: wrap;
   }
   .grid2 {
     display: grid;

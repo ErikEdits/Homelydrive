@@ -323,6 +323,12 @@ export const de: Record<string, string> = {
   // settings
   'settings.profile': 'Profil',
   'settings.displayName': 'Anzeigename',
+  'settings.avatar': 'Profilbild',
+  'settings.avatarUpload': 'Bild hochladen',
+  'settings.avatarChange': 'Bild ändern',
+  'settings.avatarRemove': 'Entfernen',
+  'settings.avatarHint': 'Das Bild wird quadratisch aus der Mitte zugeschnitten und anderen neben deinem Namen angezeigt.',
+  'settings.avatarSaved': 'Profilbild gespeichert',
   'settings.language': 'Sprache',
   'settings.theme': 'Design',
   'settings.saved': 'Gespeichert',

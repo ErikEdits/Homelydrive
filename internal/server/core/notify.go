@@ -151,13 +151,15 @@ func (c *Core) MarkNotificationsRead(userID int64, ids []int64) {
 
 // Activity is one entry of the activity log ("Aktivitäten").
 type Activity struct {
-	ID        int64  `json:"id"`
-	Actor     string `json:"actor"`
-	Action    string `json:"action"`
-	Ref       string `json:"space,omitempty"`
-	Path      string `json:"path"`
-	Details   string `json:"details,omitempty"`
-	CreatedAt int64  `json:"created_at"`
+	ID          int64  `json:"id"`
+	Actor       string `json:"actor"`
+	ActorID     int64  `json:"actor_id,omitempty"`
+	ActorAvatar int64  `json:"actor_avatar,omitempty"`
+	Action      string `json:"action"`
+	Ref         string `json:"space,omitempty"`
+	Path        string `json:"path"`
+	Details     string `json:"details,omitempty"`
+	CreatedAt   int64  `json:"created_at"`
 }
 
 // logActivity records an action. actor is the user (nil for link uploads).
@@ -183,7 +185,8 @@ func (c *Core) ListActivity(u *User, beforeID int64, limit int) ([]Activity, err
 	where, args := scopeSQL(scopes, false, "a")
 	where = "(" + where + " OR a.user_id = ?)"
 	args = append(args, u.ID)
-	q := `SELECT a.id, a.actor, a.space_id, a.action, a.path, a.details, a.created_at FROM activity a
+	q := `SELECT a.id, a.actor, COALESCE(a.user_id, 0), COALESCE(au.avatar, 0), a.space_id, a.action, a.path, a.details, a.created_at
+		FROM activity a LEFT JOIN users au ON au.id = a.user_id
 		WHERE a.id < ? AND ` + where + ` ORDER BY a.id DESC LIMIT ?`
 	rows, err := c.DB.Query(q, append(append([]any{beforeID}, args...), limit)...)
 	if err != nil {
@@ -194,7 +197,7 @@ func (c *Core) ListActivity(u *User, beforeID int64, limit int) ([]Activity, err
 	for rows.Next() {
 		var a Activity
 		var spaceID int64
-		if err := rows.Scan(&a.ID, &a.Actor, &spaceID, &a.Action, &a.Path, &a.Details, &a.CreatedAt); err != nil {
+		if err := rows.Scan(&a.ID, &a.Actor, &a.ActorID, &a.ActorAvatar, &spaceID, &a.Action, &a.Path, &a.Details, &a.CreatedAt); err != nil {
 			return nil, err
 		}
 		if ref, rel, ok := refFor(scopes, spaceID, a.Path); ok {

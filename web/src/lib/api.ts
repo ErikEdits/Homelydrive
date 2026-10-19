@@ -37,7 +37,10 @@ export function setUnauthorizedHandler(fn: () => void) {
 export async function api<T = any>(method: string, path: string, body?: unknown, params?: Params): Promise<T> {
   const headers: Record<string, string> = { 'X-HD': '1' }
   let payload: BodyInit | undefined
-  if (body !== undefined) {
+  if (body instanceof Blob) {
+    headers['Content-Type'] = body.type || 'application/octet-stream'
+    payload = body
+  } else if (body !== undefined) {
     headers['Content-Type'] = 'application/json'
     payload = JSON.stringify(body)
   }

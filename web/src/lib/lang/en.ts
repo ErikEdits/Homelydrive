@@ -300,6 +300,12 @@ export const en: Record<string, string> = {
 
   'settings.profile': 'Profile',
   'settings.displayName': 'Display name',
+  'settings.avatar': 'Profile picture',
+  'settings.avatarUpload': 'Upload picture',
+  'settings.avatarChange': 'Change picture',
+  'settings.avatarRemove': 'Remove',
+  'settings.avatarHint': 'The picture is cropped to a square from its middle and shown to others next to your name.',
+  'settings.avatarSaved': 'Profile picture saved',
   'settings.language': 'Language',
   'settings.theme': 'Theme',
   'settings.saved': 'Saved',

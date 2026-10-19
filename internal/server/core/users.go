@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"errors"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -21,6 +22,7 @@ type User struct {
 	QuotaBytes  int64  `json:"quota_bytes"` // 0 = unlimited
 	Lang        string `json:"lang"`
 	HasVault    bool   `json:"has_vault"`
+	Avatar      int64  `json:"avatar"` // time of the profile picture, 0 = none
 	CreatedAt   int64  `json:"created_at"`
 }
 
@@ -36,11 +38,11 @@ var dummyHash, _ = bcrypt.GenerateFromPassword([]byte("homelydrive"), bcrypt.Def
 
 var usernameRe = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$`)
 
-const userCols = `id, username, display_name, is_admin, quota_bytes, lang, vault_key IS NOT NULL, created_at`
+const userCols = `id, username, display_name, is_admin, quota_bytes, lang, vault_key IS NOT NULL, avatar, created_at`
 
 func scanUser(row interface{ Scan(...any) error }) (*User, error) {
 	u := &User{}
-	err := row.Scan(&u.ID, &u.Username, &u.DisplayName, &u.IsAdmin, &u.QuotaBytes, &u.Lang, &u.HasVault, &u.CreatedAt)
+	err := row.Scan(&u.ID, &u.Username, &u.DisplayName, &u.IsAdmin, &u.QuotaBytes, &u.Lang, &u.HasVault, &u.Avatar, &u.CreatedAt)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, ErrNotFound
 	}
@@ -221,6 +223,7 @@ func (c *Core) DeleteUser(id int64, deleteFiles bool) error {
 		}
 	}
 	c.deleteVaultFiles(id)
+	os.Remove(c.avatarFile(id))
 	if _, err := c.DB.Exec(`DELETE FROM users WHERE id = ?`, id); err != nil {
 		return err
 	}

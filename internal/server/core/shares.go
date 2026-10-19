@@ -14,16 +14,17 @@ import (
 
 // Share is a file or folder shared with another user of the server.
 type Share struct {
-	ID         int64  `json:"id"`
-	Space      string `json:"space,omitempty"`
-	Path       string `json:"path"`
-	Name       string `json:"name"`
-	IsDir      bool   `json:"is_dir"`
-	TargetID   int64  `json:"target_id"`
-	TargetName string `json:"target_name"`
-	OwnerName  string `json:"owner_name,omitempty"`
-	CanWrite   bool   `json:"can_write"`
-	CreatedAt  int64  `json:"created_at"`
+	ID           int64  `json:"id"`
+	Space        string `json:"space,omitempty"`
+	Path         string `json:"path"`
+	Name         string `json:"name"`
+	IsDir        bool   `json:"is_dir"`
+	TargetID     int64  `json:"target_id"`
+	TargetName   string `json:"target_name"`
+	TargetAvatar int64  `json:"target_avatar,omitempty"`
+	OwnerName    string `json:"owner_name,omitempty"`
+	CanWrite     bool   `json:"can_write"`
+	CreatedAt    int64  `json:"created_at"`
 }
 
 // UserBrief is shown in the share dialog.
@@ -31,11 +32,12 @@ type UserBrief struct {
 	ID          int64  `json:"id"`
 	Username    string `json:"username"`
 	DisplayName string `json:"display_name"`
+	Avatar      int64  `json:"avatar,omitempty"`
 }
 
 // ListUserBriefs lists all other users (for choosing whom to share with).
 func (c *Core) ListUserBriefs(exclude int64) ([]UserBrief, error) {
-	rows, err := c.DB.Query(`SELECT id, username, display_name FROM users WHERE id <> ? ORDER BY username`, exclude)
+	rows, err := c.DB.Query(`SELECT id, username, display_name, avatar FROM users WHERE id <> ? ORDER BY username`, exclude)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +45,7 @@ func (c *Core) ListUserBriefs(exclude int64) ([]UserBrief, error) {
 	out := []UserBrief{}
 	for rows.Next() {
 		var u UserBrief
-		rows.Scan(&u.ID, &u.Username, &u.DisplayName)
+		rows.Scan(&u.ID, &u.Username, &u.DisplayName, &u.Avatar)
 		out = append(out, u)
 	}
 	return out, rows.Err()
@@ -56,7 +58,7 @@ func (c *Core) SharesOf(a *Access, rel string) ([]Share, error) {
 		return nil, err
 	}
 	full := a.Full(rel)
-	rows, err := c.DB.Query(`SELECT s.id, s.path, s.is_dir, s.target_user_id, COALESCE(NULLIF(u.display_name, ''), u.username), s.can_write, s.created_at
+	rows, err := c.DB.Query(`SELECT s.id, s.path, s.is_dir, s.target_user_id, COALESCE(NULLIF(u.display_name, ''), u.username), u.avatar, s.can_write, s.created_at
 		FROM shares s JOIN users u ON u.id = s.target_user_id WHERE s.space_id = ? AND s.path = ? ORDER BY u.username`, a.Space.ID, full)
 	if err != nil {
 		return nil, err
@@ -65,7 +67,7 @@ func (c *Core) SharesOf(a *Access, rel string) ([]Share, error) {
 	out := []Share{}
 	for rows.Next() {
 		var s Share
-		if err := rows.Scan(&s.ID, &s.Path, &s.IsDir, &s.TargetID, &s.TargetName, &s.CanWrite, &s.CreatedAt); err != nil {
+		if err := rows.Scan(&s.ID, &s.Path, &s.IsDir, &s.TargetID, &s.TargetName, &s.TargetAvatar, &s.CanWrite, &s.CreatedAt); err != nil {
 			return nil, err
 		}
 		_, s.Name = fsname.Split(s.Path)
@@ -113,7 +115,7 @@ func (c *Core) CreateShare(a *Access, rel string, targetID int64, canWrite bool)
 		"from": a.User.Name(), "name": r.Name, "is_dir": r.IsDir, "space": "share:" + strconv.FormatInt(id, 10), "can_write": canWrite,
 	})
 	c.Events.Publish(targetID, Event{Type: "roots_changed", Data: nil})
-	return &Share{ID: id, Path: rel, Name: r.Name, IsDir: r.IsDir, TargetID: targetID, TargetName: target.Name(), CanWrite: canWrite, CreatedAt: now()}, nil
+	return &Share{ID: id, Path: rel, Name: r.Name, IsDir: r.IsDir, TargetID: targetID, TargetName: target.Name(), TargetAvatar: target.Avatar, CanWrite: canWrite, CreatedAt: now()}, nil
 }
 
 // DeleteShare stops sharing. The owner or the recipient may do this.
@@ -141,7 +143,7 @@ func (c *Core) DeleteShare(u *User, id int64) error {
 // OutgoingShares lists everything the user shared with others.
 func (c *Core) OutgoingShares(u *User) ([]Share, error) {
 	scopes := c.scopes(u)
-	rows, err := c.DB.Query(`SELECT s.id, s.space_id, s.path, s.is_dir, s.target_user_id, COALESCE(NULLIF(t.display_name, ''), t.username), s.can_write, s.created_at
+	rows, err := c.DB.Query(`SELECT s.id, s.space_id, s.path, s.is_dir, s.target_user_id, COALESCE(NULLIF(t.display_name, ''), t.username), t.avatar, s.can_write, s.created_at
 		FROM shares s JOIN users t ON t.id = s.target_user_id WHERE s.owner_id = ? ORDER BY s.created_at DESC`, u.ID)
 	if err != nil {
 		return nil, err
@@ -151,7 +153,7 @@ func (c *Core) OutgoingShares(u *User) ([]Share, error) {
 	for rows.Next() {
 		var s Share
 		var spaceID int64
-		if err := rows.Scan(&s.ID, &spaceID, &s.Path, &s.IsDir, &s.TargetID, &s.TargetName, &s.CanWrite, &s.CreatedAt); err != nil {
+		if err := rows.Scan(&s.ID, &spaceID, &s.Path, &s.IsDir, &s.TargetID, &s.TargetName, &s.TargetAvatar, &s.CanWrite, &s.CreatedAt); err != nil {
 			return nil, err
 		}
 		_, s.Name = fsname.Split(s.Path)

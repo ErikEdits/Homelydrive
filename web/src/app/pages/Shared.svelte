@@ -4,6 +4,7 @@
   import { errText, t } from '../../lib/i18n.svelte'
   import { dateTime } from '../../lib/format'
   import type { FileInfo, Link, Share } from '../../lib/types'
+  import Avatar from '../../lib/ui/Avatar.svelte'
   import FileIcon from '../../lib/ui/FileIcon.svelte'
   import { confirmDialog, toast } from '../../lib/ui/ui.svelte'
   import FileBrowser from '../components/FileBrowser.svelte'
@@ -86,7 +87,7 @@
           {#each outgoing as s (s.id)}
             <tr>
               <td><a class="row" href={driveHash(s.space || 'home', s.is_dir ? s.path : s.path.split('/').slice(0, -1).join('/'))}><FileIcon name={s.name} isDir={s.is_dir} size={18} />{s.name}</a></td>
-              <td>{s.target_name}</td>
+              <td><span class="who"><Avatar id={s.target_id} name={s.target_name} version={s.target_avatar} size={24} />{s.target_name}</span></td>
               <td>{s.can_write ? t('share.canEdit') : t('share.canView')}</td>
               <td class="muted">{dateTime(s.created_at)}</td>
               <td><button class="icon-btn small" onclick={() => unshare(s)} aria-label={t('share.stop')}><Trash2 size={16} /></button></td>
@@ -123,6 +124,11 @@
 {/if}
 
 <style>
+  .who {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
   .head {
     padding: 18px 20px 0;
   }

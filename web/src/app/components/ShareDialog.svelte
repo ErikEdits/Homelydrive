@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Link as LinkIcon, Upload, Trash2, Copy, UserPlus, Lock, Download } from '@lucide/svelte'
   import Modal from '../../lib/ui/Modal.svelte'
+  import Avatar from '../../lib/ui/Avatar.svelte'
   import FileIcon from '../../lib/ui/FileIcon.svelte'
   import { del, get, post } from '../../lib/api'
   import { errText, t } from '../../lib/i18n.svelte'
@@ -117,7 +118,7 @@
     {#if users.length === 0}<p class="muted small">{t('share.noUsers')}</p>{/if}
     {#each shares as s (s.id)}
       <div class="person">
-        <span class="avatar">{s.target_name.slice(0, 1).toUpperCase()}</span>
+        <Avatar id={s.target_id} name={s.target_name} version={s.target_avatar} size={32} />
         <span class="spacer">{s.target_name}</span>
         <select class="input perm" value={s.can_write} onchange={(e) => setWrite(s, e.currentTarget.value === 'true')}>
           <option value={false}>{t('share.canView')}</option>
@@ -198,17 +199,6 @@
     align-items: center;
     gap: 10px;
     padding: 6px 0;
-  }
-  .avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: var(--brand-soft);
-    color: var(--brand-strong);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
   }
   .links-title {
     margin-top: 22px;

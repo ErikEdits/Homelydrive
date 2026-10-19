@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Menu as MenuIcon, Search, SlidersHorizontal, Bell, Settings, X, LogOut, Sun, Moon, Monitor, Languages } from '@lucide/svelte'
+  import Avatar from '../../lib/ui/Avatar.svelte'
   import Logo from '../../lib/ui/Logo.svelte'
   import Menu from '../../lib/ui/Menu.svelte'
   import { post } from '../../lib/api'
@@ -56,8 +57,6 @@
     savePref('hd_theme', th)
     applyTheme()
   }
-
-  const initials = $derived((app.me?.name || '?').trim().slice(0, 1).toUpperCase())
 </script>
 
 <header class="top">
@@ -133,8 +132,8 @@
       {#if app.unread > 0}<span class="badge">{app.unread > 9 ? '9+' : app.unread}</span>{/if}
     </button>
     <a class="icon-btn hide-mobile" href="#/settings" aria-label={t('nav.settings')}><Settings size={21} /></a>
-    <button class="avatar" onclick={(e) => (userMenu = { x: e.clientX - 200, y: e.clientY + 16 })} aria-label={app.me?.name}>
-      {initials}
+    <button class="me" onclick={(e) => (userMenu = { x: e.clientX - 200, y: e.clientY + 16 })} aria-label={app.me?.name}>
+      <Avatar id={app.me?.id} name={app.me?.name || ''} version={app.me?.avatar} size={36} />
     </button>
   </div>
 </header>
@@ -241,16 +240,18 @@
     font-weight: 700;
     line-height: 16px;
   }
-  .avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
+  .me {
+    display: flex;
+    padding: 0;
     border: none;
-    background: linear-gradient(135deg, #4f8ef7, #1f56c9);
-    color: #fff;
-    font-weight: 600;
+    border-radius: 50%;
+    background: none;
     cursor: pointer;
     margin-left: 4px;
+  }
+  .me:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
   }
   .mobile {
     display: none;

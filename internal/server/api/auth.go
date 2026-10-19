@@ -149,6 +149,7 @@ func (s *Server) meJSON(u *core.User) map[string]any {
 		"used":         used,
 		"lang":         lang,
 		"has_vault":    u.HasVault,
+		"avatar":       u.Avatar,
 	}
 }
 
@@ -212,6 +213,43 @@ func (s *Server) handleInfo(w http.ResponseWriter, r *http.Request, sess *core.S
 		info["update"] = up
 	}
 	writeJSON(w, http.StatusOK, info)
+}
+
+// handleSetAvatar takes the image as the request body.
+func (s *Server) handleSetAvatar(w http.ResponseWriter, r *http.Request, sess *core.Session) {
+	if err := s.Core.SetAvatar(r.Context(), sess.User, r.Body); err != nil {
+		s.fail(w, err)
+		return
+	}
+	u, _ := s.Core.GetUser(sess.User.ID)
+	writeJSON(w, http.StatusOK, s.meJSON(u))
+}
+
+func (s *Server) handleDeleteAvatar(w http.ResponseWriter, r *http.Request, sess *core.Session) {
+	if err := s.Core.DeleteAvatar(sess.User); err != nil {
+		s.fail(w, err)
+		return
+	}
+	u, _ := s.Core.GetUser(sess.User.ID)
+	writeJSON(w, http.StatusOK, s.meJSON(u))
+}
+
+// handleAvatar serves a profile picture. Links carry ?v=<time of change>,
+// so a picture can be cached until it changes.
+func (s *Server) handleAvatar(w http.ResponseWriter, r *http.Request, sess *core.Session) {
+	id, _ := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	p, err := s.Core.AvatarPath(id)
+	if err != nil {
+		s.fail(w, err)
+		return
+	}
+	if r.URL.Query().Get("v") != "" {
+		w.Header().Set("Cache-Control", "private, max-age=31536000, immutable")
+	} else {
+		w.Header().Set("Cache-Control", "private, no-cache")
+	}
+	w.Header().Set("Content-Type", "image/jpeg")
+	http.ServeFile(w, r, p)
 }
 
 func (s *Server) handleUserBriefs(w http.ResponseWriter, r *http.Request, sess *core.Session) {
