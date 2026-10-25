@@ -201,8 +201,10 @@ func (c *Core) Thumb(ctx context.Context, a *Access, rel string, size int) (stri
 		size = 256
 	case size <= 512:
 		size = 512
-	default:
+	case size <= 1280:
 		size = 1280
+	default:
+		size = 2560 // replaces the original in the viewer (HEIC, TIFF, RAW)
 	}
 	rel, err := relPath(rel)
 	if err != nil {

@@ -8,7 +8,7 @@
   import FileIcon from '../../lib/ui/FileIcon.svelte'
   import { t } from '../../lib/i18n.svelte'
   import { bytes, date, ext, folderColors, parentOf } from '../../lib/format'
-  import { thumbUrl } from '../../lib/api'
+  import { thumbUrl, tileThumbSize } from '../../lib/api'
   import type { FileInfo } from '../../lib/types'
   import { filesFromDrop, filesFromInput, uploader, uploadEndpoint } from '../../lib/upload.svelte'
   import { app, savePref } from '../state.svelte'
@@ -222,7 +222,7 @@
   }
 
   function thumb(f: FileInfo) {
-    return thumbUrl(refOf(f), f.path, 256, f.mtime)
+    return thumbUrl(refOf(f), f.path, tileThumbSize(), f.mtime)
   }
 
   function location(f: FileInfo) {

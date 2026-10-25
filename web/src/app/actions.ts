@@ -117,8 +117,8 @@ export function viewerItem(f: FileInfo): ViewerItem {
   const space = refOf(f)
   const e = f.name.split('.').pop()?.toLowerCase() || ''
   let url = contentUrl(space, f.path)
-  // Formats browsers cannot show (HEIC, TIFF, RAW) use the server preview.
-  if (f.category === 'image' && !browserImages.has(e)) url = thumbUrl(space, f.path, 1280, f.mtime)
+  // Formats browsers cannot show (HEIC, TIFF, RAW) use the largest server preview.
+  if (f.category === 'image' && !browserImages.has(e)) url = thumbUrl(space, f.path, 2560, f.mtime)
   return {
     name: f.name,
     category: f.category || 'other',

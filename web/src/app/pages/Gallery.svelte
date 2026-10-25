@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { Image as ImageIcon, Play } from '@lucide/svelte'
-  import { get, thumbUrl } from '../../lib/api'
+  import { get, thumbUrl, tileThumbSize } from '../../lib/api'
   import { errText, t } from '../../lib/i18n.svelte'
   import { dayLabel } from '../../lib/format'
   import type { FileInfo } from '../../lib/types'
@@ -71,7 +71,7 @@
     <div class="grid">
       {#each g.items as f (refOf(f) + f.path)}
         <button class="tile" onclick={() => openFile(f, items)} title={f.name}>
-          <img src={thumbUrl(refOf(f), f.path, 256, f.mtime)} alt="" loading="lazy" />
+          <img src={thumbUrl(refOf(f), f.path, tileThumbSize(), f.mtime)} alt="" loading="lazy" />
           {#if f.category === 'video'}<span class="vid"><Play size={16} fill="#fff" /></span>{/if}
         </button>
       {/each}

@@ -82,6 +82,15 @@ export function contentUrl(space: string | undefined, path: string, download = f
   return '/api/v1/files/content' + qs({ space: space || 'home', path, download: download ? 1 : undefined })
 }
 
+/**
+ * Preview size for the square tiles of the photo and file grids. A preview
+ * fits its longer side into the size and the tile crops it to a square, so
+ * on sharp screens (phones, scaled laptops) 256 would be stretched and blurry.
+ */
+export function tileThumbSize(): number {
+  return window.devicePixelRatio > 1 ? 512 : 256
+}
+
 export function thumbUrl(space: string | undefined, path: string, size = 256, version?: number): string {
   return '/api/v1/files/thumb' + qs({ space: space || 'home', path, size, v: version })
 }
