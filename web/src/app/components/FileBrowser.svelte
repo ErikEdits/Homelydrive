@@ -1,7 +1,7 @@
 <script lang="ts">
   import {
     LayoutGrid, List, Info, Download, Share2, FolderInput, Copy, Trash2, Star, StarOff, Pencil, Palette,
-    FolderOpen, PackageOpen, ExternalLink, FolderPlus, FileUp, FolderUp, RefreshCw, Eye, ArrowUp, ArrowDown, X, Link,
+    FolderOpen, PackageOpen, ExternalLink, FolderPlus, FileUp, FolderUp, RefreshCw, Eye, ArrowUp, ArrowDown, X, Link, CopyCheck,
   } from '@lucide/svelte'
   import Menu, { type MenuItem } from '../../lib/ui/Menu.svelte'
   import Modal from '../../lib/ui/Modal.svelte'
@@ -134,6 +134,7 @@
           : { label: t('action.star'), icon: Star, onclick: () => setStar(single, true) },
       )
       if (single.is_dir) items.push({ label: t('action.color'), icon: Palette, disabled: !canWrite, onclick: () => (colorFor = single) })
+      if (single.is_dir) items.push({ label: t('dup.findLong'), icon: CopyCheck, onclick: () => (app.duplicates = { space: refOf(single), path: single.path, name: single.name }) })
       if (!single.is_dir && ext(single.name) === 'zip') items.push({ label: t('action.extract'), icon: PackageOpen, disabled: !canWrite, onclick: () => extract(single) })
       items.push({ label: t('action.details'), icon: Info, onclick: () => { app.details = single; app.showDetails = true; savePref('hd_details', true) } })
       if (flat) items.push({ label: t('action.showLocation'), icon: ExternalLink, onclick: () => openLocation(single) })
@@ -157,6 +158,7 @@
         { label: t('action.uploadFolder'), icon: FolderUp, onclick: () => folderInput?.click() },
         { separator: true },
         { label: t('action.newTextFile'), onclick: () => newTextFile(tgt.space, tgt.folder) },
+        { label: t('dup.findLong'), icon: CopyCheck, onclick: () => (app.duplicates = { space: tgt.space, path: tgt.folder, name: tgt.folder.split('/').pop() || t('nav.myDrive') }) },
         { label: t('action.refresh'), icon: RefreshCw, onclick: () => onrefresh?.() },
       ],
     }

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ChevronRight, FolderOpen, Users, FolderInput, Share2, HardDrive } from '@lucide/svelte'
+  import { ChevronRight, FolderOpen, Users, FolderInput, Share2, HardDrive, CopyCheck } from '@lucide/svelte'
   import { get } from '../../lib/api'
   import { errText, t } from '../../lib/i18n.svelte'
   import type { FileInfo, ListResult } from '../../lib/types'
@@ -86,6 +86,13 @@
   </nav>
   {#if root?.owner}<span class="chip">{t('share.from', { name: root.owner })}</span>{/if}
   {#if result && !result.can_write}<span class="chip">{t('files.readOnly')}</span>{/if}
+  {#if result}
+    <span class="spacer"></span>
+    <button class="btn ghost small" title={t('dup.findLong')}
+      onclick={() => (app.duplicates = { space: route.ref, path: route.path, name: crumbs.at(-1)?.name || rootName })}>
+      <CopyCheck size={16} />{t('dup.find')}
+    </button>
+  {/if}
 </div>
 
 <FileBrowser

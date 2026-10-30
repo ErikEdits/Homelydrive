@@ -74,6 +74,7 @@
   }
   footer {
     display: flex;
+    flex-wrap: wrap;
     justify-content: flex-end;
     gap: 8px;
     padding: 12px 24px 20px;

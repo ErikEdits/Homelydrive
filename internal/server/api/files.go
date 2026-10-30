@@ -53,6 +53,19 @@ func (s *Server) handleStat(w http.ResponseWriter, r *http.Request, sess *core.S
 	writeJSON(w, http.StatusOK, fi)
 }
 
+func (s *Server) handleDuplicates(w http.ResponseWriter, r *http.Request, sess *core.Session) {
+	a := s.access(w, sess, r.URL.Query().Get("space"))
+	if a == nil {
+		return
+	}
+	groups, err := s.Core.FindDuplicates(r.Context(), a, r.URL.Query().Get("path"))
+	if err != nil {
+		s.fail(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"groups": groups})
+}
+
 // serveFile streams a file with range support (video seeking, resumable downloads).
 func serveFile(w http.ResponseWriter, r *http.Request, f *core.OpenedFile, download bool) {
 	h := w.Header()

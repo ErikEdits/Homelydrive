@@ -61,6 +61,7 @@ Everything connects through **Tailscale**: the server is only reachable inside y
 - Picks up files copied straight into the storage folder
 - Several users with storage limits (default 100 GB) – the admin cannot see other people's files
 - Profile pictures
+- Find and clean up duplicate files in a folder
 - Log view, warning at 90 % disk usage, update hint
 - Optional HTTPS with the Tailscale certificate, optional Docker
 

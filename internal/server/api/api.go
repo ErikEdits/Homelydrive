@@ -65,6 +65,7 @@ func (s *Server) Handler() http.Handler {
 	// --- files ---
 	mux.HandleFunc("GET /api/v1/files/list", s.auth(s.handleList))
 	mux.HandleFunc("GET /api/v1/files/stat", s.auth(s.handleStat))
+	mux.HandleFunc("GET /api/v1/files/duplicates", s.auth(s.handleDuplicates))
 	mux.HandleFunc("GET /api/v1/files/content", s.auth(s.handleContent))
 	mux.HandleFunc("PUT /api/v1/files/content", s.auth(s.handlePutContent))
 	mux.HandleFunc("GET /api/v1/files/thumb", s.auth(s.handleThumb))

@@ -46,6 +46,8 @@ export const app = $state({
   viewer: null as { items: ViewerItem[]; index: number; slideshow?: boolean } | null,
   shareTarget: null as FileInfo | null,
   moveTarget: null as { items: FileInfo[]; mode: 'move' | 'copy' } | null,
+  /** folder searched for duplicate files */
+  duplicates: null as { space: string; path: string; name: string } | null,
   details: null as FileInfo | null,
   /** bumped when a folder changes on the server: key "spaceId:path" */
   changes: {} as Record<string, number>,

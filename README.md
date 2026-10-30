@@ -62,6 +62,7 @@ Alles verbindet sich über **Tailscale**: Der Server ist nur in deinem privaten 
 - Erkennt Dateien, die direkt in den Speicherordner kopiert werden
 - Mehrere Benutzer mit Speicherlimit (Standard 100 GB) – der Admin sieht keine fremden Dateien
 - Profilbilder
+- Doppelte Dateien in einem Ordner finden und aufräumen
 - Protokoll, Warnung bei 90 % Speicher, Update-Hinweis
 - Optional HTTPS über das Tailscale-Zertifikat, optional Docker
 

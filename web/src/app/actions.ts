@@ -51,19 +51,21 @@ export async function rename(f: FileInfo) {
   await run(() => post('/files/rename', { space: refOf(f), path: f.path, new_name: name }))
 }
 
-export async function remove(items: FileInfo[]) {
-  if (items.length === 0) return
+/** Moves items to the trash after asking; true if that happened. */
+export async function remove(items: FileInfo[]): Promise<boolean> {
+  if (items.length === 0) return false
   const msg = items.length === 1 ? t('action.deleteOne', { name: items[0].name }) : t('action.deleteMany', { n: items.length })
-  if (!(await confirmDialog(t('action.delete'), msg, { okLabel: t('action.moveToTrash'), danger: true }))) return
+  if (!(await confirmDialog(t('action.delete'), msg, { okLabel: t('action.moveToTrash'), danger: true }))) return false
   // Group by space so one request per space is enough.
   const bySpace = new Map<string, string[]>()
   for (const f of items) bySpace.set(refOf(f), [...(bySpace.get(refOf(f)) || []), f.path])
   for (const [space, paths] of bySpace) {
     const ok = await run(() => post('/files/delete', { space, paths }))
-    if (ok === undefined) return
+    if (ok === undefined) return false
   }
   toast(t('action.deleted', { n: items.length }), 'info', { label: t('nav.trash'), run: () => (location.hash = '#/trash') })
   refreshQuota()
+  return true
 }
 
 export function downloadItems(items: FileInfo[]) {

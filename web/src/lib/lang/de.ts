@@ -320,6 +320,21 @@ export const de: Record<string, string> = {
   'vault.empty': 'Der Tresor ist leer.',
   'vault.deleteForever': '„{name}“ endgültig löschen?',
 
+  // duplicates
+  'dup.find': 'Doppelte finden',
+  'dup.findLong': 'Doppelte Dateien finden',
+  'dup.title': 'Doppelte Dateien',
+  'dup.in': 'In „{name}“ und allen Unterordnern',
+  'dup.searching': 'Suche nach Dateien mit gleichem Inhalt …',
+  'dup.none': 'Keine doppelten Dateien gefunden.',
+  'dup.summary': 'Gruppen gleicher Dateien: {n} · doppelt belegt: {size}',
+  'dup.hint': 'Gleicher Inhalt, auch wenn der Name anders ist. Vorausgewählt ist alles bis auf eine Datei je Gruppe.',
+  'dup.copies': '{n} gleiche Dateien',
+  'dup.keep': 'Behalten',
+  'dup.keepOne': 'Bitte mindestens eine Datei behalten.',
+  'dup.thisFolder': 'dieser Ordner',
+  'dup.delete': 'In den Papierkorb ({n}, {size})',
+
   // settings
   'settings.profile': 'Profil',
   'settings.displayName': 'Anzeigename',

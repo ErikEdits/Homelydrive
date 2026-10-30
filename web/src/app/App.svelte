@@ -12,6 +12,7 @@
   import Viewer from './components/Viewer.svelte'
   import ShareDialog from './components/ShareDialog.svelte'
   import MoveDialog from './components/MoveDialog.svelte'
+  import DuplicatesDialog from './components/DuplicatesDialog.svelte'
   import DetailsPanel from './components/DetailsPanel.svelte'
   import Drive from './pages/Drive.svelte'
   import Recent from './pages/Recent.svelte'
@@ -94,6 +95,7 @@
   {#if app.viewer}<Viewer />{/if}
   {#if app.shareTarget}<ShareDialog file={app.shareTarget} />{/if}
   {#if app.moveTarget}<MoveDialog />{/if}
+  {#if app.duplicates}<DuplicatesDialog />{/if}
 {/if}
 <Dialogs />
 
