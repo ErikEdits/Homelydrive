@@ -24,7 +24,11 @@ func TestDuplicates(t *testing.T) {
 	home := filepath.Join(e.dir, "storage", "users", "anna")
 	os.WriteFile(filepath.Join(home, "Handy", "Kopie von IMG_1.jpg"), foto, 0o644)
 
-	var res struct{ Groups []core.DuplicateGroup }
+	// The same video in another quality: same name, different content.
+	e.upload(anna, "home", "Handy/Videos/087 - Las albinas.mp4", []byte("video in 720p"))
+	e.upload(anna, "home", "Handy/Videos/087 - Las albinas.mp4", []byte("video in 1080p, groesser"))
+
+	var res core.Duplicates
 	e.do(anna, "GET", "/api/v1/files/duplicates?space=home&path=Handy", nil, &res, 200)
 	if len(res.Groups) != 1 {
 		t.Fatalf("groups: %+v", res.Groups)
@@ -36,6 +40,10 @@ func TestDuplicates(t *testing.T) {
 	}
 	if len(g.Files) != 4 || g.Size != int64(len(foto)) || paths[0] != "Handy/DCIM/IMG_1.jpg" {
 		t.Fatalf("group: size %d, %v", g.Size, paths)
+	}
+	if len(res.Similar) != 1 || len(res.Similar[0].Files) != 2 || res.Similar[0].Size != 0 ||
+		res.Similar[0].Files[1].Name != "087 - Las albinas (1).mp4" {
+		t.Fatalf("similar: %+v", res.Similar)
 	}
 
 	// The whole drive also finds the copy outside.

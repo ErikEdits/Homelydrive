@@ -16,6 +16,7 @@
 
   const target = app.duplicates!
   let groups = $state<Group[]>([])
+  let similar = $state<Group[]>([])
   let loading = $state(true)
   let error = $state('')
   let selected = $state<Set<string>>(new Set())
@@ -27,10 +28,12 @@
     loading = true
     error = ''
     try {
-      const r = await get<{ groups: Group[] }>('/files/duplicates', { space: target.space, path: target.path })
-      for (const g of r.groups) g.files.forEach((f) => (f.space = target.space))
+      const r = await get<{ groups: Group[]; similar: Group[] }>('/files/duplicates', { space: target.space, path: target.path })
+      for (const g of [...r.groups, ...r.similar]) g.files.forEach((f) => (f.space = target.space))
       groups = r.groups
-      // Suggest deleting everything but the first file of each group.
+      similar = r.similar
+      // Suggest deleting everything but the first file of each group of
+      // identical files; files that only share the name are left to the user.
       selected = new Set(r.groups.flatMap((g) => g.files.slice(1).filter((f) => f.can_write).map(key)))
     } catch (e) {
       error = errText(e)
@@ -63,12 +66,36 @@
     return p || t('dup.thisFolder')
   }
 
-  const chosen = $derived(groups.flatMap((g) => g.files.filter((f) => selected.has(key(f)))))
+  // A file can be in both lists; count it once.
+  const chosen = $derived([...new Map([...groups, ...similar].flatMap((g) => g.files).filter((f) => selected.has(key(f))).map((f) => [key(f), f])).values()])
   const freed = $derived(chosen.reduce((n, f) => n + f.size, 0))
   const wasted = $derived(groups.reduce((n, g) => n + g.size * (g.files.length - 1), 0))
   const allGone = (g: Group) => g.files.every((f) => selected.has(key(f)))
-  const blocked = $derived(groups.some(allGone))
+  const blocked = $derived(groups.some(allGone) || similar.some(allGone))
 </script>
+
+{#snippet group(g: Group, title: string)}
+  <section class="group" class:bad={allGone(g)}>
+    <div class="ghead">{title}</div>
+    {#each g.files as f (key(f))}
+      <label class="file" class:keep={!selected.has(key(f))}>
+        <input type="checkbox" checked={selected.has(key(f))} disabled={!f.can_write} onchange={() => toggle(f)} />
+        <span class="pic">
+          {#if f.category === 'image' || f.category === 'video'}
+            <img src={thumbUrl(f.space, f.path, 256, f.mtime)} alt="" loading="lazy" onerror={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')} />
+          {/if}
+          <FileIcon name={f.name} category={f.category} size={22} />
+        </span>
+        <span class="info">
+          <span class="name ellipsis">{f.name}</span>
+          <span class="small muted ellipsis">{folderOf(f)} · {bytes(f.size)} · {date(f.mtime, false)}</span>
+        </span>
+        {#if !selected.has(key(f))}<span class="chip">{t('dup.keep')}</span>{/if}
+      </label>
+    {/each}
+    {#if allGone(g)}<p class="warn small">{t('dup.keepOne')}</p>{/if}
+  </section>
+{/snippet}
 
 <Modal title={t('dup.title')} onclose={() => (app.duplicates = null)} width="680px">
   <p class="muted small where">{t('dup.in', { name: target.name })}</p>
@@ -77,40 +104,34 @@
     <div class="state"><div class="spin"></div>{t('dup.searching')}</div>
   {:else if error}
     <p class="error-text">{error}</p>
-  {:else if groups.length === 0}
+  {:else if groups.length === 0 && similar.length === 0}
     <div class="state"><CopyCheck size={44} strokeWidth={1.4} />{t('dup.none')}</div>
   {:else}
-    <p class="summary">{t('dup.summary', { n: groups.length, size: bytes(wasted) })}</p>
-    <p class="muted small">{t('dup.hint')}</p>
-    <div class="groups">
-      {#each groups as g (g.files[0].path)}
-        <section class="group" class:bad={allGone(g)}>
-          <div class="ghead">{t('dup.copies', { n: g.files.length })} · {bytes(g.size)}</div>
-          {#each g.files as f (key(f))}
-            <label class="file" class:keep={!selected.has(key(f))}>
-              <input type="checkbox" checked={selected.has(key(f))} disabled={!f.can_write} onchange={() => toggle(f)} />
-              <span class="pic">
-                {#if f.category === 'image' || f.category === 'video'}
-                  <img src={thumbUrl(f.space, f.path, 256, f.mtime)} alt="" loading="lazy" onerror={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')} />
-                {/if}
-                <FileIcon name={f.name} category={f.category} size={22} />
-              </span>
-              <span class="info">
-                <span class="name ellipsis">{f.name}</span>
-                <span class="small muted ellipsis">{folderOf(f)} · {date(f.mtime, false)}</span>
-              </span>
-              {#if !selected.has(key(f))}<span class="chip">{t('dup.keep')}</span>{/if}
-            </label>
-          {/each}
-          {#if allGone(g)}<p class="warn small">{t('dup.keepOne')}</p>{/if}
-        </section>
-      {/each}
-    </div>
+    {#if groups.length}
+      <p class="summary">{t('dup.summary', { n: groups.length, size: bytes(wasted) })}</p>
+      <p class="muted small">{t('dup.hint')}</p>
+      <div class="groups">
+        {#each groups as g (g.files[0].path)}
+          {@render group(g, t('dup.copies', { n: g.files.length }) + ' · ' + bytes(g.size))}
+        {/each}
+      </div>
+    {:else}
+      <p class="muted">{t('dup.noneExact')}</p>
+    {/if}
+    {#if similar.length}
+      <h3 class="section">{t('dup.similarTitle')}</h3>
+      <p class="muted small">{t('dup.similarHint')}</p>
+      <div class="groups">
+        {#each similar as g (g.files[0].path)}
+          {@render group(g, t('dup.sameName', { n: g.files.length }))}
+        {/each}
+      </div>
+    {/if}
   {/if}
 
   {#snippet footer()}
     <button class="btn ghost" onclick={() => (app.duplicates = null)}>{t('common.close')}</button>
-    {#if groups.length}
+    {#if groups.length || similar.length}
       <button class="btn danger" disabled={busy || chosen.length === 0 || blocked} onclick={deleteSelected}>
         <Trash2 size={16} />{t('dup.delete', { n: chosen.length, size: bytes(freed) })}
       </button>
@@ -147,6 +168,11 @@
   .summary {
     font-weight: 500;
     margin-bottom: 2px;
+  }
+  .section {
+    font-size: 15px;
+    font-weight: 500;
+    margin: 22px 0 2px;
   }
   .groups {
     display: flex;

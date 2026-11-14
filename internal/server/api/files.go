@@ -58,12 +58,12 @@ func (s *Server) handleDuplicates(w http.ResponseWriter, r *http.Request, sess *
 	if a == nil {
 		return
 	}
-	groups, err := s.Core.FindDuplicates(r.Context(), a, r.URL.Query().Get("path"))
+	d, err := s.Core.FindDuplicates(r.Context(), a, r.URL.Query().Get("path"))
 	if err != nil {
 		s.fail(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"groups": groups})
+	writeJSON(w, http.StatusOK, d)
 }
 
 // serveFile streams a file with range support (video seeking, resumable downloads).
